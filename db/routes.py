@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-
-from .database import get_db
-from .models import Movie
-from .schemas import MovieCreate, MovieRead
+from database import get_db
+from models import Movie
+from schemas import MovieCreate, MovieRead
 
 router = APIRouter()
 
 
 # Get a list of all movies
-
-
 @router.get("/movies/", response_model=List[MovieRead])
 def read_movies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     movies = db.query(Movie).offset(skip).limit(limit).all()
