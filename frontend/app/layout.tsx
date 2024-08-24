@@ -8,10 +8,10 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ display: 'flex', minHeight: '100vh' }}>
-        <aside style={{ width: '250px', padding: '20px' }}>
-          <nav>
-            <ul style={{ listStyleType: 'none', padding: 0 }}>
+      <body className='flex min-screen flex-wrap'>
+        <aside className='h-20 sm:h-screen w-full sm:w-40  bg-slate-600'>
+          <nav className='h-full'>
+            <ul className='flex justify-around items-center sm:block h-full ' style={{ listStyleType: 'none', padding: 0 }}>
               <li>
                 <Link href="/">Home</Link>
               </li>

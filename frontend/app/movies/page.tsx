@@ -1,17 +1,23 @@
 
 
+import MovieSearchForm from "./Form";
+import Pagination from "./Pagination";
+
 
 export default async function movies() {
     const movies = await getMovies();
 
+
+
     return (
         <>
-            <h1>Movies</h1>
+            {/* <MovieSearchForm /> */}
             <ul>
                 {movies.map((movie: any) => (
                     <li key={movie.show_id}>{movie.title}</li>
                 ))}
             </ul>
+            <Pagination />
         </>
     );
 }
