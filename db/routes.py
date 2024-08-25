@@ -43,6 +43,13 @@ def read_movie_by_title(title: str, db: Session = Depends(get_db)):
 @router.get('/movies/filter/', response_model=MovieList)
 def read_movies_by_form(
     show_type: str = None,
+    director: str = None,
+    actor: str = None,
+    genre: str = None,
+    country: str = None,
+    streaming_service: str = None,
+    min_release_year: int = None,
+    max_release_year: int = None,
     skip: int = 0, 
     limit: int = 10,
     db: Session = Depends(get_db)
@@ -50,6 +57,21 @@ def read_movies_by_form(
     movies = db.query(Movie)
     if show_type:
         movies = movies.filter(Movie.type == show_type)
+    if director:
+        movies = movies.filter(func.upper(Movie.director) == director.upper())
+    if actor:
+        movies = movies.filter(func.upper(Movie.cast).contains(actor.upper()))
+    if genre:
+        movies = movies.filter(func.upper(Movie.listed_in).contains(genre.upper()))
+    if country:
+        movies = movies.filter(func.upper(Movie.country) == country.upper())
+    if streaming_service:
+        movies = movies.filter(func.upper(Movie.streaming_service) == streaming_service.upper())
+    if min_release_year:
+        movies = movies.filter(Movie.release_year >= min_release_year)
+    if max_release_year:
+        movies = movies.filter(Movie.release_year <= max_release_year)
+
     total = movies.count()
     movies = movies.offset(skip).limit(limit).all()
 
