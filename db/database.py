@@ -2,12 +2,16 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
-# Load the cleaned data
-# df = pd.read_csv('../csv/cleaned_data.csv')
+# Load environment variables from .env file
+load_dotenv()
+
+db_url = os.getenv('DB_URL')
 
 
-SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:Samuel1121@db-movie-app-instance-1.cb4isekyea6v.us-east-2.rds.amazonaws.com:5432/postgres'
+SQLALCHEMY_DATABASE_URL = db_url
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -24,5 +28,7 @@ def get_db():
         db.close()
 
 
-# Load the cleaned data into the database
+
+# Uncomment the following lines to seed data to the database
+# df = pd.read_csv('../csv/cleaned_data.csv')
 # df.to_sql('movies', engine, if_exists='replace', index=False)

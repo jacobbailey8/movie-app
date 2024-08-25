@@ -30,6 +30,7 @@ yarn-error.log*
 preprocessing/
 backend/
 venv/
+.env
 
 # vercel
 .vercel
