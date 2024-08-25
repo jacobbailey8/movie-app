@@ -1,10 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import ShowTypeSelect from './formComponents/ShowTypeSelect';
-
+import DirectorInput from './formComponents/DirectorInput';
 
 export default function SearchForm({ setMovies }) {
     const [selectedShowType, setSelectedShowType] = useState(null);
+    const [director, setDirector] = useState(null);
     const [pageNum, setPageNum] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -22,6 +23,11 @@ export default function SearchForm({ setMovies }) {
         if (selectedShowType) {
             url += `&show_type=${selectedShowType}`;
         }
+        if (director) {
+            url += `&director=${director}`;
+        }
+
+
         const response = await fetch(url);
         const data = await response.json();
         setTotalPages(Math.ceil(data.total / limit));
@@ -30,10 +36,14 @@ export default function SearchForm({ setMovies }) {
 
     return (
         <>
+            {/* search form */}
             <form onSubmit={(e) => handleSearch(e, 1)}>
                 <ShowTypeSelect selectedShowType={selectedShowType} setSelectedShowType={setSelectedShowType} />
+                <DirectorInput director={director} setDirector={setDirector} />
                 <button type='submit'>Search</button>
             </form>
+
+            {/* pagination */}
             <div className='flex items-center'>
                 {pageNum > 1 ? <button onClick={(e) => { handleSearch(e, pageNum - 1); setPageNum(pageNum - 1) }} className='text-slate-300 bg-slate-600 p-2 rounded-sm'>Prev</button> : <button className='text-slate-300 bg-slate-600 p-2 rounded-sm opacity-40'>Prev</button>}
                 {pageNum < totalPages ? <button onClick={(e) => { handleSearch(e, pageNum + 1); setPageNum(pageNum + 1) }} className='text-slate-300 bg-slate-600 p-2 rounded-sm'>Next</button>
