@@ -13,8 +13,8 @@ class MovieBase(BaseModel):
     release_year: int
     rating: Optional[str] = None
     duration: Optional[float] = None
-    listed_in: str
-    description: str
+    listed_in: Optional[str] = None
+    description: Optional[str] = None
     streaming_service: str
     num_seasons: Optional[int] = None
 
@@ -28,3 +28,7 @@ class MovieRead(MovieBase):
 
     class Config:
         orm_mode = True
+
+class MovieList(BaseModel):
+    total: int
+    movies: list[MovieRead]
