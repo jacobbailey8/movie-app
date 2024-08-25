@@ -7,7 +7,7 @@ import pandas as pd
 # df = pd.read_csv('../csv/cleaned_data.csv')
 
 
-SQLALCHEMY_DATABASE_URL = 'postgresql://jacobbailey:Samuel1121@localhost:5432/movie_app'
+SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:Samuel1121@db-movie-app-instance-1.cb4isekyea6v.us-east-2.rds.amazonaws.com:5432/postgres'
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
