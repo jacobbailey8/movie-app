@@ -37,7 +37,7 @@ function MobileSidebar() {
     }, [drawerOpen]);
     return (
 
-        <>
+        <div className='sm:hidden'>
             {/* head */}
             <div className='flex w-screen justify-between p-4 bg-slate-800 text-slate-300'>
                 <h2 className=''>Movie App</h2>
@@ -68,7 +68,7 @@ function MobileSidebar() {
                     </div>
                 </div>
             </div >
-        </>
+        </div>
     )
 }
 
