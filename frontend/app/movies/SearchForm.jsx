@@ -5,7 +5,7 @@ import DirectorInput from './formComponents/DirectorInput';
 
 export default function SearchForm({ setMovies }) {
     const [selectedShowType, setSelectedShowType] = useState(null);
-    const [director, setDirector] = useState(null);
+    const [director, setDirector] = useState('');
     const [pageNum, setPageNum] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
