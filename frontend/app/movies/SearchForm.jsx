@@ -2,13 +2,20 @@
 import React, { useState } from 'react';
 import ShowTypeSelect from './formComponents/ShowTypeSelect';
 import DirectorInput from './formComponents/DirectorInput';
+import ActorInput from './formComponents/ActorInput';
+import StreamingServiceSelect from './formComponents/StreamingServiceSelect';
+import YearRange from './formComponents/YearRange';
 
 export default function SearchForm({ setMovies }) {
     const [selectedShowType, setSelectedShowType] = useState(null);
     const [director, setDirector] = useState('');
+    const [actor, setActor] = useState('');
+    const [streamingService, setStreamingService] = useState(null);
+    const [minYear, setMinYear] = useState(1980);
+    const [maxYear, setMaxYear] = useState(2024);
+
     const [pageNum, setPageNum] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-
 
 
 
@@ -26,6 +33,18 @@ export default function SearchForm({ setMovies }) {
         if (director) {
             url += `&director=${director}`;
         }
+        if (actor) {
+            url += `&actor=${actor}`;
+        }
+        if (streamingService) {
+            url += `&streaming_service=${streamingService}`;
+        }
+        if (minYear) {
+            url += `&min_release_year=${minYear}`;
+        }
+        if (maxYear) {
+            url += `&max_release_year=${maxYear}`;
+        }
 
 
         const response = await fetch(url);
@@ -40,6 +59,10 @@ export default function SearchForm({ setMovies }) {
             <form onSubmit={(e) => handleSearch(e, 1)}>
                 <ShowTypeSelect selectedShowType={selectedShowType} setSelectedShowType={setSelectedShowType} />
                 <DirectorInput director={director} setDirector={setDirector} />
+                <ActorInput actor={actor} setActor={setActor} />
+                <StreamingServiceSelect streamingService={streamingService} setStreamingService={setStreamingService} />
+                <YearRange minYear={minYear} setMinYear={setMinYear} maxYear={maxYear} setMaxYear={setMaxYear} />
+
                 <button type='submit'>Search</button>
             </form>
 
@@ -53,7 +76,4 @@ export default function SearchForm({ setMovies }) {
         </>
     );
 }
-
-
-
 
