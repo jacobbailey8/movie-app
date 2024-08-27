@@ -3,12 +3,41 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import HomeIcon from '@mui/icons-material/Home';
+import SavedSearchIcon from '@mui/icons-material/SavedSearch';
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import { usePathname } from 'next/navigation';
+
 
 
 function MobileSidebar() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const sidebarRef = useRef(null);
+    const pathname = usePathname();
+    const [homeActive, setHomeActive] = useState(false);
+    const [searchActive, setSearchActive] = useState(false);
+    const [recommendActive, setRecommendActive] = useState(false);
+
+
+    // Handle active link styles
+    useEffect(() => {
+        if (pathname === '/') {
+            setHomeActive(true);
+            setSearchActive(false);
+            setRecommendActive(false);
+        } else if (pathname === '/movies') {
+            setHomeActive(false);
+            setSearchActive(true);
+            setRecommendActive(false);
+        } else if (pathname === '/recommend') {
+            setHomeActive(false);
+            setSearchActive(false);
+            setRecommendActive(true);
+        }
+
+
+
+    }, [pathname]);
 
 
     const toggleMenu = () => {
@@ -39,7 +68,7 @@ function MobileSidebar() {
 
         <div className='sm:hidden'>
             {/* head */}
-            <div className='flex w-screen justify-between p-4 bg-slate-800 text-slate-300'>
+            <div className='flex w-screen justify-between p-4 bg-neutral-800 text-slate-300'>
                 <h2 className=''>Movie App</h2>
                 <MenuIcon onClick={toggleMenu} />
             </div>
@@ -54,17 +83,28 @@ function MobileSidebar() {
 
             {/* drawer */}
             <div ref={sidebarRef}
-                className={`z-50 fixed top-0 right-0 w-64 h-screen bg-slate-800 text-slate-300 transform transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`z-50 fixed top-0 right-0 w-64 h-screen bg-neutral-800 text-slate-50 transform transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}>
-                <div className='p-4'>
-                    <div className='flex justify-between items-center'>
-                        <h2 className='text-xl'>Menu</h2>
+                <div className=''>
+                    <div className='flex justify-between items-center p-4'>
+                        <h2 className='text-md ml-2 opacity-80'>Menu</h2>
                         <CloseIcon onClick={toggleMenu} />
                     </div>
-                    <div className='flex flex-col gap-5 mt-8'>
-                        <Link href='/'>Home</Link>
-                        <Link href='/movies'>Movies</Link>
-                        <Link href='/recommend'>Recommend</Link>
+                    <div className='flex flex-col gap-5 mt-4'>
+
+                        <div className={`flex gap-2 items-center text-lg p-4 ${homeActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
+                            <HomeIcon className={`sidebar-link text-xl ${homeActive ? 'text-orange-400' : ''}`} />
+                            <Link className={`sidebar-link`} href='/'>Home</Link>
+                        </div>
+
+                        <div className={`flex gap-2 items-center text-lg p-4 ${searchActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
+                            <SavedSearchIcon className={`sidebar-link text-xl ${searchActive ? 'text-orange-400' : ''}`} />
+                            <Link className='sidebar-link' href='/movies'>Find Movies</Link>
+                        </div>
+                        <div className={`flex gap-2 items-center text-lg p-4 ${recommendActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
+                            <SettingsSuggestIcon className={`sidebar-link text-xl ${recommendActive ? 'text-orange-400' : ''}`} />
+                            <Link className='sidebar-link' href='/recommend'>Recommendations</Link>
+                        </div>
                     </div>
                 </div>
             </div >
