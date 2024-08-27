@@ -66,7 +66,7 @@ export default function movies() {
         ))}
       </ul>
       {/* FIXME: Something with this is pushing over the sidebar  */}
-      {/* <MovieTable data={data} selectedAttributes={["title", "release_year", "streaming_service"]} setSelectedAttributes={setSelectedAttributes} /> */}
+      <MovieTable data={data} selectedAttributes={["title", "release_year", "streaming_service"]} setSelectedAttributes={setSelectedAttributes} />
 
     </>
   );
