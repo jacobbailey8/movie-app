@@ -38,7 +38,7 @@ export default function MovieAutocomplete() {
     return (
         <Autocomplete
             options={titles}
-            // getOptionLabel={(option) => option.name}
+            // getOptionLabel={(option) => option.title}
             loading={loading}
             onInputChange={(event, newInputValue) => {
                 setInputValue(newInputValue);
@@ -48,7 +48,7 @@ export default function MovieAutocomplete() {
                     {...params}
                     label="Search for a movie"
                     variant="outlined"
-                    fullWidth
+                    className="w-full sm:w-64 md:w-80 lg:w-96"
                     InputProps={{
                         ...params.InputProps,
                         endAdornment: (
