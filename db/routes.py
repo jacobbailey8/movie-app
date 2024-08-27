@@ -4,7 +4,7 @@ from sqlalchemy import func
 from typing import List
 from database import get_db
 from models import Movie
-from schemas import MovieCreate, MovieRead, MovieList
+from schemas import MovieCreate, MovieRead, MovieList, MovieTitle
 
 router = APIRouter()
 
@@ -28,13 +28,19 @@ def read_movie(movie_id: int, db: Session = Depends(get_db)):
 # Get a movie by title
 
 
-@router.get('/movies/by-title/{title}', response_model=MovieRead)
+@router.get('/movies/by-title/{title}', response_model=List[MovieTitle])
 def read_movie_by_title(title: str, db: Session = Depends(get_db)):
-    movie = db.query(Movie).filter(func.upper(
-        Movie.title) == title.upper()).first()
-    if movie is None:
-        raise HTTPException(status_code=404, detail="Movie not found")
-    return movie
+    movies = db.query(Movie).filter(Movie.title.ilike(f"%{title}%")).all()
+
+    # Use a set to store unique titles
+    unique_titles = {movie.title for movie in movies}
+
+    
+    if movies is None:
+        raise HTTPException(status_code=404, detail="No movies found with that title")
+    # Return the unique titles as a list of dictionaries
+    return [{"title": title} for title in unique_titles]
+
 
 # get movies by form
 # can search by type(show/movie) , director, actor name, country, release_year, rating, genre, streaming service

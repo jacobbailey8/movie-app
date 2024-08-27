@@ -32,3 +32,6 @@ class MovieRead(MovieBase):
 class MovieList(BaseModel):
     total: int
     movies: list[MovieRead]
+
+class MovieTitle(BaseModel):
+    title: str
