@@ -1,8 +1,28 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import date
 
+# Users
+class UserBase(BaseModel):
+    username: str
+    email: EmailStr
 
+class UserCreate(UserBase):
+    password: str
+
+class UserRead(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+
+# Movies
 class MovieBase(BaseModel):
     type: str
     title: str
@@ -17,10 +37,6 @@ class MovieBase(BaseModel):
     description: Optional[str] = None
     streaming_service: str
     num_seasons: Optional[int] = None
-
-
-class MovieCreate(MovieBase):
-    pass
 
 
 class MovieRead(MovieBase):
