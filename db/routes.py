@@ -4,7 +4,7 @@ from sqlalchemy import func
 from typing import List
 from database import get_db
 from models import Movie
-from schemas import MovieCreate, MovieRead, MovieList, MovieTitle
+from schemas import MovieCreate, MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry
 
 router = APIRouter()
 
@@ -85,3 +85,33 @@ def read_movies_by_form(
         'total': total,
         'movies': movies
     }
+
+
+# get movies by genre
+@router.get('/movies/by-genre/{genre}', response_model=List[MovieGenre])
+def read_movie_by_genre(genre: str, db: Session = Depends(get_db)):
+    movies = db.query(Movie).filter(Movie.listed_in.ilike(f"%{genre}%")).all()
+
+    # Use a set to store unique titles by splitting each genre by comma eg. "Action, Adventure, Comedy" -> ["Action", "Adventure", "Comedy"]
+    unique_genres = {genre.strip() for movie in movies for genre in movie.listed_in.split(",")}
+
+    
+    if movies is None:
+        raise HTTPException(status_code=404, detail="No movies found with that genre")
+    # Return the unique titles as a list of dictionaries
+    return [{"genre": genre} for genre in unique_genres]
+
+
+# get movies by country
+@router.get('/movies/by-country/{country}', response_model=List[MovieCountry])
+def read_movie_by_country(country: str, db: Session = Depends(get_db)):
+    movies = db.query(Movie).filter(Movie.country.ilike(f"%{country}%")).all()
+
+    unique_countries = {country.strip() for movie in movies for country in movie.country.split(",")}
+
+    
+    if movies is None:
+        raise HTTPException(status_code=404, detail="No movies found with that genre")
+    # Return the unique titles as a list of dictionaries
+    return [{"country": country} for country in unique_countries]
+

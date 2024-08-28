@@ -5,21 +5,19 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 
-export default function MovieAutocomplete() {
-    const [titles, setTitles] = useState([]);
+export default function CountryAutocomplete({ country, setCountry }) {
+    const [countries, setCountries] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (inputValue.length >= 3) {
             setLoading(true);
-            fetch(`http://localhost:8000/api/movies/by-title/${inputValue}`)
+            fetch(`http://localhost:8000/api/movies/by-country/${inputValue}`)
                 .then((response) => response.json())
                 .then((data) => {
-                    const titlesArray = data.map((movie) => movie.title);
-                    console.log(titlesArray);
-                    // const titlesArray = ['Test Movie', 'Test Movie 2', 'Test Movie 3'];
-                    setTitles(titlesArray);
+                    const countriesArray = data.map((movie) => movie.country);
+                    setCountries(countriesArray);
                     setLoading(false);
                 })
                 .catch((error) => {
@@ -29,7 +27,7 @@ export default function MovieAutocomplete() {
 
         }
         else {
-            setTitles([]);
+            setCountries([]);
         }
 
 
@@ -37,16 +35,20 @@ export default function MovieAutocomplete() {
 
     return (
         <Autocomplete
-            options={titles}
+            className='mt-4'
+            options={countries}
             // getOptionLabel={(option) => option.title}
             loading={loading}
             onInputChange={(event, newInputValue) => {
                 setInputValue(newInputValue);
             }}
+            onChange={(event, newValue) => {
+                setCountry(newValue);  // Update the country prop when a country is selected
+            }}
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    label="Search for a movie"
+                    label="Enter a country"
                     variant="outlined"
                     className="w-full sm:w-64 md:w-80 lg:w-96"
                     sx={{

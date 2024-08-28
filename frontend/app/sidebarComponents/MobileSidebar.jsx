@@ -6,6 +6,7 @@ import Link from 'next/link';
 import HomeIcon from '@mui/icons-material/Home';
 import SavedSearchIcon from '@mui/icons-material/SavedSearch';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import TheatersIcon from '@mui/icons-material/Theaters';
 import { usePathname } from 'next/navigation';
 
 
@@ -66,10 +67,15 @@ function MobileSidebar() {
     }, [drawerOpen]);
     return (
 
-        <div className='sm:hidden'>
+        <div className='sm:hidden sticky top-0 z-40'>
             {/* head */}
             <div className='flex w-screen justify-between p-4 bg-neutral-800 text-slate-300'>
-                <h2 className=''>Movie App</h2>
+                <div className='flex items-center gap-1'>
+                    <TheatersIcon className='text-orange-400' />
+
+                    <Link href='/' className='text-white font-bold'>FlickFinder</Link>
+
+                </div>
                 <MenuIcon onClick={toggleMenu} />
             </div>
 
@@ -92,19 +98,19 @@ function MobileSidebar() {
                     </div>
                     <div className='flex flex-col gap-5 mt-4'>
 
-                        <div className={`flex gap-2 items-center text-lg p-4 ${homeActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
+                        <Link href='/' className={`flex gap-2 items-center text-lg p-4 ${homeActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
                             <HomeIcon className={`sidebar-link text-xl ${homeActive ? 'text-orange-400' : ''}`} />
-                            <Link className={`sidebar-link`} href='/'>Home</Link>
-                        </div>
+                            <h2>Home</h2>
+                        </Link>
 
-                        <div className={`flex gap-2 items-center text-lg p-4 ${searchActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
+                        <Link href='/movies' className={`flex gap-2 items-center text-lg p-4 ${searchActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
                             <SavedSearchIcon className={`sidebar-link text-xl ${searchActive ? 'text-orange-400' : ''}`} />
-                            <Link className='sidebar-link' href='/movies'>Find Movies</Link>
-                        </div>
-                        <div className={`flex gap-2 items-center text-lg p-4 ${recommendActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
+                            <h2>Find Movies</h2>
+                        </Link>
+                        <Link href='/recommend' className={`flex gap-2 items-center text-lg p-4 ${recommendActive ? 'opacity-100 bg-neutral-700 border-r-4 rounded border-r-orange-400' : 'opacity-80'}`}>
                             <SettingsSuggestIcon className={`sidebar-link text-xl ${recommendActive ? 'text-orange-400' : ''}`} />
-                            <Link className='sidebar-link' href='/recommend'>Recommendations</Link>
-                        </div>
+                            <h2>Recommendations</h2>
+                        </Link>
                     </div>
                 </div>
             </div >

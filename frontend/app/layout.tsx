@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <MobileSidebar />
         <DesktopSidebar />
-        <main className='bg-slate-200 h-screen w-screen p-4 sm:ml-48'>
+        <main className='bg-slate-200 min-h-screen min-w-screen p-4 sm:pl-56'>
           {children}
         </main>
       </body>

@@ -5,14 +5,19 @@ import DirectorInput from './formComponents/DirectorInput';
 import ActorInput from './formComponents/ActorInput';
 import StreamingServiceSelect from './formComponents/StreamingServiceSelect';
 import YearRange from './formComponents/YearRange';
+import GenreAutocomplete from './formComponents/GenreSelect';
+import CountryAutocomplete from './formComponents/CountrySelect';
 
 export default function SearchForm({ setMovies }) {
-    const [selectedShowType, setSelectedShowType] = useState(null);
+    const [selectedShowType, setSelectedShowType] = useState('Movie');
     const [director, setDirector] = useState('');
     const [actor, setActor] = useState('');
     const [streamingService, setStreamingService] = useState(null);
     const [minYear, setMinYear] = useState(1980);
     const [maxYear, setMaxYear] = useState(2024);
+    const [genre, setGenre] = useState(null);
+    const [country, setCountry] = useState(null);
+
 
     const [pageNum, setPageNum] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -45,7 +50,12 @@ export default function SearchForm({ setMovies }) {
         if (maxYear) {
             url += `&max_release_year=${maxYear}`;
         }
-
+        if (genre) {
+            url += `&genre=${genre}`;
+        }
+        if (country) {
+            url += `&country=${country}`;
+        }
 
         const response = await fetch(url);
         const data = await response.json();
@@ -56,14 +66,15 @@ export default function SearchForm({ setMovies }) {
     return (
         <>
             {/* search form */}
-            <form onSubmit={(e) => handleSearch(e, 1)}>
+            <form onSubmit={(e) => handleSearch(e, 1)} className=''>
                 <ShowTypeSelect selectedShowType={selectedShowType} setSelectedShowType={setSelectedShowType} />
                 <DirectorInput director={director} setDirector={setDirector} />
                 <ActorInput actor={actor} setActor={setActor} />
                 <StreamingServiceSelect streamingService={streamingService} setStreamingService={setStreamingService} />
                 <YearRange minYear={minYear} setMinYear={setMinYear} maxYear={maxYear} setMaxYear={setMaxYear} />
-
-                <button type='submit'>Search</button>
+                <GenreAutocomplete genre={genre} setGenre={setGenre} />
+                <CountryAutocomplete country={country} setCountry={setCountry} />
+                <button className='bg-orange-400 font-bold border border-orange-400 rounded p-2 text-slate-50 block mt-4 mb-4 w-40' type='submit'>Search</button>
             </form>
 
             {/* pagination */}

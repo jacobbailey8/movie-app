@@ -35,3 +35,9 @@ class MovieList(BaseModel):
 
 class MovieTitle(BaseModel):
     title: str
+
+class MovieGenre(BaseModel):
+    genre: str
+
+class MovieCountry(BaseModel):
+    country: str
