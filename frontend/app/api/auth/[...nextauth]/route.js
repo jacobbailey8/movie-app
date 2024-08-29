@@ -11,42 +11,57 @@ export const authOptions = {
             },
             async authorize(credentials) {
                 // Call your FastAPI backend to validate the user's credentials
-                const res = await fetch('http://localhost:8000/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(credentials),
-                });
+                try {
+                    const res = await fetch('http://127.0.0.1:8000/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: credentials.username,
+                            password: credentials.password,
+                        }),
+                    });
 
-                const user = await res.json();
 
-                // If login is successful, return user object
-                if (res.ok && user) {
-                    return user;
+                    const data = await res.json();
+
+
+                    // If login is successful, return user object
+                    if (res.ok && data.access_token) {
+
+                        return {
+                            username: credentials.username,
+                            accessToken: data.access_token,
+                            tokenType: data.token_type,
+                        };
+                    }
+
+                    // If login fails, return null
+
+                    return null;
+                }
+                catch (e) {
+                    console.log(e);
                 }
 
-                // If login fails, return null
-                return null;
             },
         }),
     ],
-    pages: {
-        signIn: '/auth/signin',
-        signOut: '/auth/signout',
-        error: '/auth/error', // Error code passed in query string as ?error=
-    },
+
     callbacks: {
         async jwt({ token, user }) {
+            // Persist the access token in the JWT
             if (user) {
-                token.id = user.id;
-                token.name = user.name;
-                token.email = user.email;
+                token.username = user.username;
+                token.accessToken = user.accessToken;
+                token.tokenType = user.tokenType;
             }
             return token;
         },
         async session({ session, token }) {
-            session.user.id = token.id;
-            session.user.name = token.name;
-            session.user.email = token.email;
+            // Make the access token available in the session
+            session.accessToken = token.accessToken;
+            session.tokenType = token.tokenType;
+            session.username = token.username;
             return session;
         },
     },

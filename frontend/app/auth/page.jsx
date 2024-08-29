@@ -15,17 +15,25 @@ export default function AuthPage() {
         e.preventDefault();
 
         if (isLogin) {
-            const res = await signIn('credentials', {
-                redirect: false,
-                username,
-                password,
-            });
+            try {
+                const res = await signIn('credentials', {
+                    username,
+                    password,
+                    redirect: false,
+                });
 
-            if (res.ok) {
-                router.push('/');
-            } else {
-                // Handle login error
+                if (res.ok) {
+                    router.push('/');
+                } else {
+
+
+                }
             }
+            catch (e) {
+                console.log('nope')
+                console.error(e);
+            }
+
         } else {
             // Handle sign-up
             const res = await fetch('http://localhost:8000/api/auth/signup', {
@@ -35,9 +43,24 @@ export default function AuthPage() {
             });
 
             if (res.ok) {
-                router.push('/');
+                const data = await res.json();
+                console.log('Sign-up successful', data);
+
+                // Use NextAuth.js to sign in the user using the credentials provider
+                const result = await signIn("credentials", {
+                    redirect: false,
+                    username,
+                    password,
+                });
+
+                if (result.ok) {
+                    window.location.href = "/";
+                } else {
+                    console.error("Failed to sign in after sign-up");
+                }
+
             } else {
-                // Handle sign-up error
+                console.error('Sign-up failed');
             }
         }
     };

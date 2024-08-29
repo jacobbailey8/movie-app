@@ -3,12 +3,16 @@ from typing import Optional
 from datetime import date
 
 # Users
+
+
 class UserBase(BaseModel):
     username: str
     email: EmailStr
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class UserRead(UserBase):
     id: int
@@ -16,10 +20,16 @@ class UserRead(UserBase):
     class Config:
         orm_mode = True
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
 
+
+class SignupResponse(BaseModel):
+    user: UserRead
+    access_token: str
+    token_type: str
 
 
 # Movies
@@ -45,15 +55,19 @@ class MovieRead(MovieBase):
     class Config:
         orm_mode = True
 
+
 class MovieList(BaseModel):
     total: int
     movies: list[MovieRead]
 
+
 class MovieTitle(BaseModel):
     title: str
 
+
 class MovieGenre(BaseModel):
     genre: str
+
 
 class MovieCountry(BaseModel):
     country: str

@@ -2,7 +2,7 @@
 import './globals.css';
 import MobileSidebar from './sidebarComponents/MobileSidebar';
 import DesktopSidebar from './sidebarComponents/DesktopSidebar';
-import ClientProvider from './ClientProvider';
+import ClientSessionProvider from './ClientSessionProvider';
 
 export const metadata = {
   title: 'Movie App',
@@ -14,15 +14,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className=''>
-        <ClientProvider>
-
+        <ClientSessionProvider>
           <MobileSidebar />
           <DesktopSidebar />
           <main className='bg-slate-200 min-h-screen min-w-screen p-4 sm:pl-56'>
             {children}
           </main>
+        </ClientSessionProvider>
 
-        </ClientProvider>
       </body>
     </html >
   );

@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 from database import get_db
 from models import Movie, User
-from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin
+from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse
 from auth import authenticate_user, create_access_token, get_password_hash
 from crud import get_user_by_username
+from datetime import timedelta
 
 
 router = APIRouter()
@@ -124,8 +125,8 @@ def read_movie_by_country(country: str, db: Session = Depends(get_db)):
 
 
 # USER ROUTES
-@router.post("/auth/signup", response_model=UserRead)
-def create_user_route(user: UserCreate, db: Session = Depends(get_db)):
+@router.post("/auth/signup", response_model=SignupResponse)
+def create_user_route(response: Response, user: UserCreate, db: Session = Depends(get_db)):
     db_user = get_user_by_username(db, username=user.username)
     if db_user:
         raise HTTPException(
@@ -137,7 +138,30 @@ def create_user_route(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+
+    # Create JWT token
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": new_user.username}, expires_delta=access_token_expires
+    )
+
+    # Set the JWT as a cookie
+    response.set_cookie(key="access_token",
+                        value=f"Bearer {access_token}", httponly=True)
+
+    # Manually create the UserRead object
+    user_read = UserRead(
+        id=new_user.id,
+        username=new_user.username,
+        email=new_user.email
+    )
+
+    # Return the response with the user object and the token
+    return SignupResponse(
+        user=user_read,
+        access_token=access_token,
+        token_type="bearer"
+    )
 
 
 @router.post("/auth/login")

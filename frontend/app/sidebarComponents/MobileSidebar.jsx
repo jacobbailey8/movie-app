@@ -8,6 +8,7 @@ import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 import TheatersIcon from '@mui/icons-material/Theaters';
 import ChatIcon from '@mui/icons-material/Chat';
 import { usePathname } from 'next/navigation';
+import SignOutButton from '../components/SignOutButton';
 
 
 
@@ -130,7 +131,10 @@ function MobileSidebar() {
                         </Link>
                     </div>
                 </div>
+                <SignOutButton />
             </div >
+
+
         </div>
     )
 }
