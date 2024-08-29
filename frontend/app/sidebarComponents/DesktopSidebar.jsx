@@ -7,6 +7,8 @@ import TheatersIcon from '@mui/icons-material/Theaters';
 import ChatIcon from '@mui/icons-material/Chat';
 import { usePathname } from 'next/navigation';
 import SignOutButton from '../components/SignOutButton';
+import { useSession } from 'next-auth/react';
+
 
 function DesktopSidebar() {
     const pathname = usePathname();
@@ -14,6 +16,8 @@ function DesktopSidebar() {
     const [searchActive, setSearchActive] = useState(false);
     const [recommendActive, setRecommendActive] = useState(false);
     const [assistantActive, setAssistantActice] = useState(false);
+    const { data: session, status } = useSession();
+
 
     // Handle active link styles
     useEffect(() => {
@@ -46,8 +50,12 @@ function DesktopSidebar() {
 
 
     }, [pathname]);
+
+    if (!session) {
+        return null;
+    }
     return (
-        <div className='hidden sm:block h-screen w-48 bg-neutral-800  text-slate-50 z-50 fixed'>
+        <div className='hidden sm:flex min-h-screen w-48 bg-neutral-800  text-slate-50 z-50 fixed flex-col'>
 
             <div className='flex gap-1 items-center p-4'>
                 <TheatersIcon className='text-orange-400' />

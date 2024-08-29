@@ -37,6 +37,7 @@ export default function MovieAutocomplete() {
 
     return (
         <Autocomplete
+            className='w-full sm:w-80'
             options={titles}
             // getOptionLabel={(option) => option.title}
             loading={loading}

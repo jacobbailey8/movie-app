@@ -22,28 +22,22 @@ function YearRange({ minYear, setMinYear, maxYear, setMaxYear }) {
                 max={2021}
                 style={{ width: '18rem' }} // Adjust this as needed
                 className='text-orange-300'
+                sx={{
+
+                    color: 'orange', // Makes the slider orange
+                    '& .MuiSlider-thumb': {
+                        backgroundColor: 'orange', // Thumb color
+                    },
+                    '& .MuiSlider-track': {
+                        backgroundColor: 'orange', // Track color
+                    },
+                    '& .MuiSlider-rail': {
+                        backgroundColor: '#ffcc80', // Rail color (lighter shade of orange)
+                    },
+                }}
 
             />
-            {/* <h2>Min Year: </h2>
-            <label >
-                <input className="text-black"
-                    type="number"
-                    value={minYear}
-                    onChange={handleChangeMin}
-                    placeholder="1980"
-                />
 
-            </label>
-            <h2>Max Year: </h2>
-            <label >
-                <input className="text-black"
-                    type="number"
-                    value={maxYear}
-                    onChange={handleChangeMax}
-                    placeholder="2024"
-                />
-
-            </label> */}
         </>
     )
 }

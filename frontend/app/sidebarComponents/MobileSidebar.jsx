@@ -9,6 +9,8 @@ import TheatersIcon from '@mui/icons-material/Theaters';
 import ChatIcon from '@mui/icons-material/Chat';
 import { usePathname } from 'next/navigation';
 import SignOutButton from '../components/SignOutButton';
+import { useSession } from 'next-auth/react';
+
 
 
 
@@ -20,6 +22,8 @@ function MobileSidebar() {
     const [searchActive, setSearchActive] = useState(false);
     const [recommendActive, setRecommendActive] = useState(false);
     const [assistantActive, setAssistantActice] = useState(false);
+    const { data: session, status } = useSession();
+
 
 
 
@@ -79,6 +83,10 @@ function MobileSidebar() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [drawerOpen]);
+
+    if (!session) {
+        return null;
+    }
     return (
 
         <div className='sm:hidden sticky top-0 z-40'>
@@ -103,7 +111,7 @@ function MobileSidebar() {
 
             {/* drawer */}
             <div ref={sidebarRef}
-                className={`z-50 fixed top-0 right-0 w-64 h-screen bg-neutral-800 text-slate-50 transform transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`z-50 fixed top-0 right-0 w-64 flex flex-col h-screen bg-neutral-800 text-slate-50 transform transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}>
                 <div className=''>
                     <div className='flex justify-between items-center p-4'>

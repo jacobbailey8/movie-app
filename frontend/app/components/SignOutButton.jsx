@@ -1,9 +1,11 @@
 import { signOut } from "next-auth/react";
+import LogoutIcon from '@mui/icons-material/Logout';
 
 function SignOutButton() {
     return (
-        <button onClick={() => signOut({ callbackUrl: '/' })} style={{ padding: '10px', backgroundColor: 'red', color: 'white', border: 'none', cursor: 'pointer' }}>
-            Sign Out
+        <button onClick={() => signOut({ callbackUrl: '/' })} className="flex gap-1 items-center self-center mr-8 fixed bottom-12 ">
+            <LogoutIcon />
+            <h3 >Sign out</h3>
         </button>
     );
 }

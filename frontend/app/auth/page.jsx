@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import TheatersIcon from '@mui/icons-material/Theaters';
+
+
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true); // Toggle between login and sign-up
@@ -66,37 +69,52 @@ export default function AuthPage() {
     };
 
     return (
-        <div>
-            <h1>{isLogin ? 'Sign In' : 'Sign Up'}</h1>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Username"
-                    required
-                />
-                {!isLogin && (
+        <div className=' bg-neutral-200'>
+            <div className='flex items-center gap-1 bg-neutral-800 p-2 sm:hidden'>
+                <TheatersIcon className='text-orange-400' />
+                <h1 className='text-lg font-semibold text-neutral-200'>FlickFinder</h1>
+            </div>
+            <div className='flex flex-col  items-center min-h-screen min-w-screen pt-20 bg-neutral-200 m-0'>
+
+
+                <h1 className='text-3xl font-bold'>{isLogin ? 'Welcome back' : 'Create an account'}</h1>
+                <h6 className='opacity-75 text-sm mt-4'> {isLogin ? 'Enter your account details below' : null}</h6>
+                <form onSubmit={handleSubmit} className='flex flex-col items-center gap-4'>
+
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
+                        className=" p-4 w-56 mt-6 text-neutral-800 bg-neutral-100 rounded-lg placeholder-neutral-500 focus:outline-none"
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Username"
                         required
                     />
-                )}
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    required
-                />
-                <button type="submit">{isLogin ? 'Sign In' : 'Sign Up'}</button>
-            </form>
-            <button onClick={() => setIsLogin(!isLogin)}>
-                {isLogin ? 'Switch to Sign Up' : 'Switch to Sign In'}
-            </button>
+                    {!isLogin && (
+                        <input
+                            className=" p-4 w-56 text-neutral-800 bg-neutral-100 rounded-lg placeholder-neutral-500 focus:outline-none"
+
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Email"
+                            required
+                        />
+                    )}
+                    <input
+                        className=" p-4 w-56 text-neutral-800 bg-neutral-100 rounded-lg placeholder-neutral-500 focus:outline-none "
+
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                        required
+                    />
+                    <button className='block text-neutral-200 bg-neutral-800 p-4 font-semibold rounded w-56 text-lg mt-4 ' type="submit">{isLogin ? 'Sign In' : 'Sign Up'}</button>
+                </form>
+                <button onClick={() => setIsLogin(!isLogin)} className='mt-12 underline text-sm'>
+                    {isLogin ? 'Create an account' : 'Log in'}
+                </button>
+            </div>
         </div>
     );
 }

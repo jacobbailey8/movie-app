@@ -58,7 +58,7 @@ export default function movies() {
     }
   ]
   return (
-    <div className='flex flex-col sm:flex-row sm:justify-between '>
+    <div className='flex flex-col sm:flex-row sm:justify-between sm:pl-56 '>
       <SearchForm setMovies={setMovies} />
       <ul>
         {movies.map((movie: any) => (

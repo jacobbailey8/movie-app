@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ClientSessionProvider>
           <MobileSidebar />
           <DesktopSidebar />
-          <main className='bg-slate-200 min-h-screen min-w-screen p-4 sm:pl-56'>
+          <main className='bg-neutral-200 min-h-screen min-w-screen p-4'>
             {children}
           </main>
         </ClientSessionProvider>
