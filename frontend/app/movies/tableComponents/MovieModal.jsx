@@ -1,5 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+
 
 
 export default function Modal({ movie, closeModal }) {
@@ -23,7 +25,11 @@ export default function Modal({ movie, closeModal }) {
 
 
                 try {
-                    const res = await fetch(`https://api.themoviedb.org/3/search/movie?query=${movie.title}`, options);
+                    let base_url = 'https://api.themoviedb.org/3/search/movie?query='
+                    if (movie.type !== 'Movie') {
+                        base_url = 'https://api.themoviedb.org/3/search/tv?query='
+                    }
+                    const res = await fetch(`${base_url}${movie.title}`, options);
                     const data = await res.json();
 
                     // find image url, user rating if exists, 
@@ -56,18 +62,40 @@ export default function Modal({ movie, closeModal }) {
             onClick={handleOverlayClick}
         >
             <div
-                className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
+                className="bg-white p-2 rounded-lg shadow-lg w-80 h-[30rem] max-w-96 max-h-[34rem] flex flex-col items-center"
                 onClick={(e) => e.stopPropagation()} // Prevent modal click from triggering overlay click
             >
-                <img src={img_url} alt={movie.title} className="w-full h-auto mb-4 rounded" />
-                <h2 className="text-lg font-bold mb-4">Modal Title</h2>
-
                 <button
-                    className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+                    className='text-lg font-bold self-end'
                     onClick={closeModal}
                 >
-                    Close Modal
+                    X
                 </button>
+                <img src={img_url} alt={movie.title} className="w-48 sm:w-52 rounded mb-4" />
+                <h2 className="text-md font-bold mb-4">{movie.title}</h2>
+                <div className='flex justify-around items-center gap-4'>
+                    <div className='flex gap-1'>
+                        <Image
+                            src="/images/tomato.png"  // Path to your image in the public folder
+                            alt="Tomato" // alt text
+                            width={20} // Image width
+                            height={10} // Image height
+                        />
+                        <div>84%</div>
+                    </div>
+                    <div className='flex gap-1'>
+                        <Image
+                            src="/images/popcorn.png"  // Path to your image in the public folder
+                            alt="Tomato" // alt text
+                            width={20} // Image width
+                            height={10} // Image height
+                        />
+                        <div>84%</div>
+                    </div>
+                </div>
+                <div className='underline text-neutral-500 text-md'>Description</div>
+
+
             </div>
         </div>
     );
