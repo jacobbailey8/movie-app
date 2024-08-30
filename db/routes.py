@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 from database import get_db
-from models import Movie
-from schemas import MovieCreate, MovieRead, MovieList
+from models import Movie, User
+from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse
+from auth import authenticate_user, create_access_token, get_password_hash
+from crud import get_user_by_username
+from datetime import timedelta
+
 
 router = APIRouter()
 
@@ -28,13 +32,19 @@ def read_movie(movie_id: int, db: Session = Depends(get_db)):
 # Get a movie by title
 
 
-@router.get('/movies/by-title/{title}', response_model=MovieRead)
+@router.get('/movies/by-title/{title}', response_model=List[MovieTitle])
 def read_movie_by_title(title: str, db: Session = Depends(get_db)):
-    movie = db.query(Movie).filter(func.upper(
-        Movie.title) == title.upper()).first()
-    if movie is None:
-        raise HTTPException(status_code=404, detail="Movie not found")
-    return movie
+    movies = db.query(Movie).filter(Movie.title.ilike(f"%{title}%")).all()
+
+    # Use a set to store unique titles
+    unique_titles = {movie.title for movie in movies}
+
+    if movies is None:
+        raise HTTPException(
+            status_code=404, detail="No movies found with that title")
+    # Return the unique titles as a list of dictionaries
+    return [{"title": title} for title in unique_titles]
+
 
 # get movies by form
 # can search by type(show/movie) , director, actor name, country, release_year, rating, genre, streaming service
@@ -50,7 +60,7 @@ def read_movies_by_form(
     streaming_service: str = None,
     min_release_year: int = None,
     max_release_year: int = None,
-    skip: int = 0, 
+    skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
@@ -62,20 +72,107 @@ def read_movies_by_form(
     if actor:
         movies = movies.filter(func.upper(Movie.cast).contains(actor.upper()))
     if genre:
-        movies = movies.filter(func.upper(Movie.listed_in).contains(genre.upper()))
+        movies = movies.filter(func.upper(
+            Movie.listed_in).contains(genre.upper()))
     if country:
         movies = movies.filter(func.upper(Movie.country) == country.upper())
     if streaming_service:
-        movies = movies.filter(func.upper(Movie.streaming_service) == streaming_service.upper())
+        movies = movies.filter(func.upper(
+            Movie.streaming_service) == streaming_service.upper())
     if min_release_year:
         movies = movies.filter(Movie.release_year >= min_release_year)
     if max_release_year:
         movies = movies.filter(Movie.release_year <= max_release_year)
 
     total = movies.count()
-    movies = movies.offset(skip).limit(limit).all()
+    movies = movies.offset(skip).all()
 
     return {
         'total': total,
         'movies': movies
     }
+
+
+# get movies by genre
+@router.get('/movies/by-genre/{genre}', response_model=List[MovieGenre])
+def read_movie_by_genre(genre: str, db: Session = Depends(get_db)):
+    movies = db.query(Movie).filter(Movie.listed_in.ilike(f"%{genre}%")).all()
+
+    # Use a set to store unique titles by splitting each genre by comma eg. "Action, Adventure, Comedy" -> ["Action", "Adventure", "Comedy"]
+    unique_genres = {genre.strip()
+                     for movie in movies for genre in movie.listed_in.split(",")}
+
+    if movies is None:
+        raise HTTPException(
+            status_code=404, detail="No movies found with that genre")
+    # Return the unique titles as a list of dictionaries
+    return [{"genre": genre} for genre in unique_genres]
+
+
+# get movies by country
+@router.get('/movies/by-country/{country}', response_model=List[MovieCountry])
+def read_movie_by_country(country: str, db: Session = Depends(get_db)):
+    movies = db.query(Movie).filter(Movie.country.ilike(f"%{country}%")).all()
+
+    unique_countries = {country.strip()
+                        for movie in movies for country in movie.country.split(",")}
+
+    if movies is None:
+        raise HTTPException(
+            status_code=404, detail="No movies found with that genre")
+    # Return the unique titles as a list of dictionaries
+    return [{"country": country} for country in unique_countries]
+
+
+# USER ROUTES
+@router.post("/auth/signup", response_model=SignupResponse)
+def create_user_route(response: Response, user: UserCreate, db: Session = Depends(get_db)):
+    db_user = get_user_by_username(db, username=user.username)
+    if db_user:
+        raise HTTPException(
+            status_code=400, detail="Username already registered")
+    hashed_password = get_password_hash(user.password)
+    new_user = User(username=user.username, email=user.email,
+                    hashed_password=hashed_password)
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    # Create JWT token
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": new_user.username}, expires_delta=access_token_expires
+    )
+
+    # Set the JWT as a cookie
+    response.set_cookie(key="access_token",
+                        value=f"Bearer {access_token}", httponly=True)
+
+    # Manually create the UserRead object
+    user_read = UserRead(
+        id=new_user.id,
+        username=new_user.username,
+        email=new_user.email
+    )
+
+    # Return the response with the user object and the token
+    return SignupResponse(
+        user=user_read,
+        access_token=access_token,
+        token_type="bearer"
+    )
+
+
+@router.post("/auth/login")
+def login_user(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = authenticate_user(
+        db, username=user.username, password=user.password)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": db_user.username})
+    return {"access_token": access_token, "token_type": "bearer"}

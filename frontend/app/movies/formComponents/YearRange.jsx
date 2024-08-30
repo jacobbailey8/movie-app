@@ -1,33 +1,43 @@
 'use client';
+import Slider from '@mui/material/Slider';
+import { useState } from 'react';
 function YearRange({ minYear, setMinYear, maxYear, setMaxYear }) {
-    const handleChangeMin = (event) => {
-        setMinYear(event.target.value);
+    const [value, setValue] = useState([minYear, maxYear]);
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+        setMinYear(newValue[0]);
+        setMaxYear(newValue[1]);
     };
-    const handleChangeMax = (event) => {
-        setMaxYear(event.target.value);
-    };
+
+
     return (
         <>
-            <h2>Min Year: </h2>
-            <label >
-                <input className="text-black"
-                    type="number"
-                    value={minYear}
-                    onChange={handleChangeMin}
-                    placeholder="1980"
-                />
+            <h2 className='opacity-50 text-sm font-bold mb-4 mt-4'>Release Year Range:</h2>
+            <Slider
+                getAriaLabel={() => 'Release year range'}
+                value={value}
+                onChange={handleChange}
+                valueLabelDisplay="auto"
+                min={1920}
+                max={2021}
+                style={{ width: '18rem' }} // Adjust this as needed
+                className='text-orange-300'
+                sx={{
 
-            </label>
-            <h2>Max Year: </h2>
-            <label >
-                <input className="text-black"
-                    type="number"
-                    value={maxYear}
-                    onChange={handleChangeMax}
-                    placeholder="2024"
-                />
+                    color: 'orange', // Makes the slider orange
+                    '& .MuiSlider-thumb': {
+                        backgroundColor: 'orange', // Thumb color
+                    },
+                    '& .MuiSlider-track': {
+                        backgroundColor: 'orange', // Track color
+                    },
+                    '& .MuiSlider-rail': {
+                        backgroundColor: '#ffcc80', // Rail color (lighter shade of orange)
+                    },
+                }}
 
-            </label>
+            />
+
         </>
     )
 }
