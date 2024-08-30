@@ -85,7 +85,7 @@ def read_movies_by_form(
         movies = movies.filter(Movie.release_year <= max_release_year)
 
     total = movies.count()
-    movies = movies.offset(skip).limit(limit).all()
+    movies = movies.offset(skip).all()
 
     return {
         'total': total,

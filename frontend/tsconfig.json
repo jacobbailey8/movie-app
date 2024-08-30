@@ -33,7 +33,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "app/movies/Form.jsx",
-    "app/page.jsx"
+    "app/page.jsx",
+    "app/movies/page.jsx"
   ],
   "exclude": [
     "node_modules"

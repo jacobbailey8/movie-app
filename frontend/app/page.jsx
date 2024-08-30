@@ -11,6 +11,6 @@ export default function HomePage() {
   if (status === "loading") {
     return <p>Loading...</p>;
   } else {
-    return <p className='sm:pl-56'>{session.username}'s dashboard</p>;
+    return <p className=' p-4 sm:pl-56'>{session.username}'s dashboard</p>;
   }
 }
