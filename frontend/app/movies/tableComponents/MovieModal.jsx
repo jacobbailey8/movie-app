@@ -1,15 +1,19 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 
 
 export default function Modal({ movie, closeModal }) {
 
-    const [img_url, setImgUrl] = React.useState('');
+    const [img_url, setImgUrl] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
+            setLoading(true);
             if (movie) {
                 const API_KEY_TMDB = process.env.NEXT_PUBLIC_TMDB_API_KEY;
                 const ACCESS_TOKEN = process.env.NEXT_PUBLIC_ACCESS_TOKEN_TMDB;
@@ -33,18 +37,20 @@ export default function Modal({ movie, closeModal }) {
                     const data = await res.json();
 
                     // find image url, user rating if exists, 
-                    const firstResult = data.results[0];
-                    const img_url = 'https://image.tmdb.org/t/p/w500' + firstResult.poster_path;
-                    setImgUrl(img_url);
-
+                    const firstResult = data?.results[0];
+                    const img_url = 'https://image.tmdb.org/t/p/w500' + firstResult?.poster_path;
+                    firstResult?.poster_path ? setImgUrl(img_url) : setImgUrl('None');
 
 
                 } catch (error) {
+
                     console.error(error)
 
 
                 }
             }
+            setLoading(false);
+
         }
         fetchData();
     }, [movie]);
@@ -65,35 +71,37 @@ export default function Modal({ movie, closeModal }) {
                 className="bg-white p-2 rounded-lg shadow-lg w-80 h-[30rem] max-w-96 max-h-[34rem] flex flex-col items-center"
                 onClick={(e) => e.stopPropagation()} // Prevent modal click from triggering overlay click
             >
-                <button
-                    className='text-lg font-bold self-end'
-                    onClick={closeModal}
-                >
-                    X
-                </button>
-                <img src={img_url} alt={movie.title} className="w-48 sm:w-52 rounded mb-4" />
-                <h2 className="text-md font-bold mb-4">{movie.title}</h2>
-                <div className='flex justify-around items-center gap-4'>
-                    <div className='flex gap-1'>
-                        <Image
-                            src="/images/tomato.png"  // Path to your image in the public folder
-                            alt="Tomato" // alt text
-                            width={20} // Image width
-                            height={10} // Image height
-                        />
-                        <div>84%</div>
+                {loading && <CircularProgress className='mt-24' color='inherit' />}
+                {!loading && (<>
+                    <button
+                        className='text-lg font-bold self-end'
+                        onClick={closeModal}
+                    >
+                        X
+                    </button>
+                    {img_url !== 'None' ? <img src={img_url} alt={movie.title} className="w-48 sm:w-52 rounded mb-4" /> : <div>Image not found</div>}
+                    <h2 className="text-md font-bold mb-4">{movie.title}</h2>
+                    <div className='flex justify-around items-center gap-4'>
+                        <div className='flex gap-1'>
+                            <Image
+                                src="/images/tomato.png"  // Path to your image in the public folder
+                                alt="Tomato" // alt text
+                                width={20} // Image width
+                                height={10} // Image height
+                            />
+                            <div>84%</div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <Image
+                                src="/images/popcorn.png"  // Path to your image in the public folder
+                                alt="Tomato" // alt text
+                                width={20} // Image width
+                                height={10} // Image height
+                            />
+                            <div>84%</div>
+                        </div>
                     </div>
-                    <div className='flex gap-1'>
-                        <Image
-                            src="/images/popcorn.png"  // Path to your image in the public folder
-                            alt="Tomato" // alt text
-                            width={20} // Image width
-                            height={10} // Image height
-                        />
-                        <div>84%</div>
-                    </div>
-                </div>
-                <div className='underline text-neutral-500 text-md'>Description</div>
+                    <div className='underline text-neutral-500 text-md'>Description</div></>)}
 
 
             </div>
