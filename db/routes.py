@@ -8,6 +8,15 @@ from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, 
 from auth import authenticate_user, create_access_token, get_password_hash
 from crud import get_user_by_username
 from datetime import timedelta
+import requests
+import os
+from dotenv import load_dotenv
+import nltk
+from collections import Counter
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env.local')
+load_dotenv(dotenv_path)
 
 
 router = APIRouter()
@@ -176,3 +185,52 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         )
     access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+# tag movie reviews
+@router.get("/reviews/movie")
+def tag_movie_reviews(movie_id: int):
+    access_token = os.getenv('ACCESS_TOKEN_TMDB')
+
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}/reviews"
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.get(url, headers=headers)
+    reviews = response.json()["results"]
+
+    all_reviews = []
+    for review in reviews:
+        content = review["content"]
+        all_reviews.append(content)
+
+    all_words = []
+    for review in all_reviews:
+
+        # Tokenize the review into words
+        words = nltk.word_tokenize(review)
+
+    # # Part-of-speech tagging (this will give us words with their POS tags)
+    # pos_tags = nltk.pos_tag(words)
+
+    # Extract adjectives and nouns (which are most descriptive)
+    # descriptive_words = [word for word,
+    #                      pos in pos_tags if pos in ['JJ', 'NN', 'NNS']]
+    # all_words.extend(descriptive_words)
+
+    # Count the frequency of descriptive words
+    # word_freq = Counter(all_words)
+
+    # # Return the most common descriptive words as potential tags
+    # # Top 10 most frequent descriptive words
+    # most_common_tags = word_freq.most_common(10)
+    # return {"tags": [word for word, freq in most_common_tags]}
+    return {'content': all_reviews}
+# tag series reviews
+
+
+@router.get("/reviews/tv")
+def tag_movie_reviews(movie_id: int):
+    url = "https://api.themoviedb.org/3/tv/" + movie_id + "/reviews"
+    pass

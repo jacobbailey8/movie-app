@@ -41,6 +41,14 @@ export default function Modal({ movie, closeModal }) {
                     const img_url = 'https://image.tmdb.org/t/p/w500' + firstResult?.poster_path;
                     firstResult?.poster_path ? setImgUrl(img_url) : setImgUrl('None');
 
+                    // get id for review fetch
+                    const id = firstResult?.id;
+                    // call fastAPI endpoint to get reviews
+                    const res2 = await fetch(`http://localhost:8000/api/reviews/${movie.type === 'Movie' ? 'movie' : 'tv'}?movie_id=${id}`);
+                    const data2 = await res2.json();
+                    console.log(data2);
+
+
 
                 } catch (error) {
 
