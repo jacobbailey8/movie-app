@@ -190,43 +190,7 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 # tag movie reviews
 @router.get("/reviews/movie")
 def tag_movie_reviews(movie_id: int):
-    access_token = os.getenv('ACCESS_TOKEN_TMDB')
-
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}/reviews"
-    headers = {
-        "accept": "application/json",
-        "Authorization": f"Bearer {access_token}"
-    }
-    response = requests.get(url, headers=headers)
-    reviews = response.json()["results"]
-
-    all_reviews = []
-    for review in reviews:
-        content = review["content"]
-        all_reviews.append(content)
-
-    all_words = []
-    for review in all_reviews:
-
-        # Tokenize the review into words
-        words = nltk.word_tokenize(review)
-
-    # # Part-of-speech tagging (this will give us words with their POS tags)
-    # pos_tags = nltk.pos_tag(words)
-
-    # Extract adjectives and nouns (which are most descriptive)
-    # descriptive_words = [word for word,
-    #                      pos in pos_tags if pos in ['JJ', 'NN', 'NNS']]
-    # all_words.extend(descriptive_words)
-
-    # Count the frequency of descriptive words
-    # word_freq = Counter(all_words)
-
-    # # Return the most common descriptive words as potential tags
-    # # Top 10 most frequent descriptive words
-    # most_common_tags = word_freq.most_common(10)
-    # return {"tags": [word for word, freq in most_common_tags]}
-    return {'content': all_reviews}
+    pass
 # tag series reviews
 
 

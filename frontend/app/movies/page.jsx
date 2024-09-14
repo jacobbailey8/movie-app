@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 import SearchForm from './SearchForm.jsx';
-import MovieTable from './tableComponents/MovieTable.jsx'
 import Table from './tableComponents/Table.jsx'
 import TuneIcon from '@mui/icons-material/Tune';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -27,7 +26,7 @@ export default function movies() {
 
   ]);
   return (
-    <div className={`flex flex-col  sm:justify-between sm:pl-56 p-4 ${showForm ? 'sm:flex-row' : 'sm:flex-col'}`}>
+    <div className={`flex flex-col   sm:pl-56 p-4 ${showForm ? 'sm:flex-row' : 'sm:flex-col'}`}>
       {showForm && <SearchForm setMovies={setMovies} setShowForm={setShowForm} setLoading={setLoading} />}
       {!showForm &&
         (<button onClick={() => setShowForm(true)} className='bg-orange-400 rounded p-2 text-slate-50 font-semibold w-44 m-6 ml-0 flex gap-1 items-center justify-center hover:opacity-80'>

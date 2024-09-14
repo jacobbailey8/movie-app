@@ -7,13 +7,6 @@ import '/Users/jacobbailey/Desktop/movie-app/frontend/app/movies/tableComponents
 
 export default function Table({ movies, setMovies, colDefs, setColDefs, setModalMovie, setModalOpen }) {
 
-    // const gridRef = useRef();
-
-    // useEffect(() => {
-    //     if (gridRef.current) {
-    //         gridRef.current.api.sizeColumnsToFit();
-    //     }
-    // }, [movies]);
 
     // Pagination: The number of rows to be displayed per page.
     const [pagination, setPagination] = useState(true);
@@ -31,7 +24,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
             setShowRecBtn(false);
         }
     }, [selections]);
-    // Row Data: The data to be displayed.
+
 
     const onRowClicked = (event) => {
         // get data from the row
@@ -48,16 +41,14 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
     }
 
     return (
-        <>
+        <div className='w-full'>
             {/* // wrapping container with theme & size */}
             <div
                 className={
                     'ag-theme-grid-builder w-full self-center max-h-[28rem] sm:max-h-[38rem] overflow-auto'
                 }
-            // style={{ height: 500 }}
             >
                 <AgGridReact
-                    // ref={gridRef}
 
                     rowData={movies}
                     columnDefs={colDefs.map(colDef => ({ ...colDef, resizable: true }))} // Make columns resizable
@@ -69,9 +60,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
                     domLayout="autoHeight" // Adjust grid height based on content
                     suppressRowClickSelection={true} // Prevent row click from affecting selection
 
-                    // onGridReady={() => {
-                    //     gridRef.current.api.sizeColumnsToFit(); // Auto-size columns to fit content on grid ready
-                    // }}
+
                     onRowClicked={onRowClicked} // Manually handle row selection
                     onSelectionChanged={(event) => {
 
@@ -85,7 +74,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
             </div>
             {showRecBtn && <button onClick={handleRecommend} className='bg-orange-400 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Generate Recommendations</button>}
 
-        </>
+        </div>
     )
 
 }
