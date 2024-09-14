@@ -8,6 +8,15 @@ from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, 
 from auth import authenticate_user, create_access_token, get_password_hash
 from crud import get_user_by_username
 from datetime import timedelta
+import requests
+import os
+from dotenv import load_dotenv
+import nltk
+from collections import Counter
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env.local')
+load_dotenv(dotenv_path)
 
 
 router = APIRouter()
@@ -176,3 +185,16 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         )
     access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+# tag movie reviews
+@router.get("/reviews/movie")
+def tag_movie_reviews(movie_id: int):
+    pass
+# tag series reviews
+
+
+@router.get("/reviews/tv")
+def tag_movie_reviews(movie_id: int):
+    url = "https://api.themoviedb.org/3/tv/" + movie_id + "/reviews"
+    pass
