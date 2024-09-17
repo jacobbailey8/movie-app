@@ -91,7 +91,7 @@ export default function Modal({ movie, closeModal }) {
                     >
                         X
                     </button>
-                    {img_url !== 'None' ? <img src={img_url} alt={movie.title} className="w-48 sm:w-52 rounded mb-4" /> : <div>Image not found</div>}
+                    {img_url !== 'None' ? <img src={img_url} alt={movie.title} className="w-48 sm:w-52 rounded mb-4" /> : <div>No Image Available</div>}
                     <h2 className="text-md font-bold mb-4">{movie.title}</h2>
                     <div className='flex justify-around items-center gap-4'>
                         <div className='flex gap-1'>
