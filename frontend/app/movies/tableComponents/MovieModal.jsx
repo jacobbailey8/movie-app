@@ -10,12 +10,13 @@ export default function Modal({ movie, closeModal }) {
 
     const [img_url, setImgUrl] = useState('');
     const [loading, setLoading] = useState(false);
+    const [tags, setTags] = useState([]);
+    const [userVote, setUserVote] = useState(0);
 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
             if (movie) {
-                const API_KEY_TMDB = process.env.NEXT_PUBLIC_TMDB_API_KEY;
                 const ACCESS_TOKEN = process.env.NEXT_PUBLIC_ACCESS_TOKEN_TMDB;
 
                 const options = {
@@ -41,13 +42,16 @@ export default function Modal({ movie, closeModal }) {
                     const img_url = 'https://image.tmdb.org/t/p/w500' + firstResult?.poster_path;
                     firstResult?.poster_path ? setImgUrl(img_url) : setImgUrl('None');
 
+                    // set user rating if exists
+                    const userRating = firstResult?.vote_average;
+                    userRating ? setUserVote(userRating) : setUserVote(0);
+
                     // get id for review fetch
                     const id = firstResult?.id;
                     // call fastAPI endpoint to get reviews
                     const res2 = await fetch(`http://localhost:8000/api/reviews/${movie.type === 'Movie' ? 'movie' : 'tv'}?movie_id=${id}`);
                     const data2 = await res2.json();
-                    console.log(data2);
-
+                    setTags(data2);
 
 
                 } catch (error) {
@@ -76,7 +80,7 @@ export default function Modal({ movie, closeModal }) {
             onClick={handleOverlayClick}
         >
             <div
-                className="bg-white p-2 rounded-lg shadow-lg w-80 h-[30rem] max-w-96 max-h-[34rem] flex flex-col items-center"
+                className="bg-white p-2 rounded-lg shadow-lg w-80  max-w-96 max-h-[36rem] flex flex-col items-center"
                 onClick={(e) => e.stopPropagation()} // Prevent modal click from triggering overlay click
             >
                 {loading && <CircularProgress className='mt-24' color='inherit' />}
@@ -106,10 +110,16 @@ export default function Modal({ movie, closeModal }) {
                                 width={20} // Image width
                                 height={10} // Image height
                             />
-                            <div>84%</div>
+                            <div>{`${(userVote * 10).toFixed()}%`}</div>
                         </div>
                     </div>
-                    <div className='underline text-neutral-500 text-md'>Description</div></>)}
+                    <div className='flex flex-wrap gap-2 items-center mt-4 mb-2 justify-center max-w-64'>
+                        {tags.map((tag, index) => (
+                            <div key={index} className='bg-gray-200 p-2 rounded-md'>{tag}</div>
+                        ))}
+
+                    </div>
+                </>)}
 
 
             </div>

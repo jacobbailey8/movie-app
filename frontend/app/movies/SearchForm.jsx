@@ -10,7 +10,7 @@ import CountryAutocomplete from './formComponents/CountrySelect';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 export default function SearchForm({ setMovies, setShowForm, setLoading }) {
-    const [selectedShowType, setSelectedShowType] = useState('Movie');
+    const [selectedShowType, setSelectedShowType] = useState(null);
     const [director, setDirector] = useState('');
     const [actor, setActor] = useState('');
     const [streamingService, setStreamingService] = useState(null);

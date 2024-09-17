@@ -10,7 +10,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
     // Pagination: The number of rows to be displayed per page.
     const [pagination, setPagination] = useState(true);
-    const [paginationPageSize, setPaginationPageSize] = useState(5);
+    const [paginationPageSize, setPaginationPageSize] = useState(10);
     const [paginationPageSizeSelector, setPaginationPageSizeSelector] = useState([5, 10, 15]);
     const [selections, setSelections] = useState([]);
     const [showRecBtn, setShowRecBtn] = useState(false);
@@ -52,9 +52,9 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
                     rowData={movies}
                     columnDefs={colDefs.map(colDef => ({ ...colDef, resizable: true }))} // Make columns resizable
-                    pagination={pagination}
-                    paginationPageSize={paginationPageSize}
-                    paginationPageSizeSelector={paginationPageSizeSelector}
+                    // pagination={pagination}
+                    // paginationPageSize={paginationPageSize}
+                    // paginationPageSizeSelector={paginationPageSizeSelector}
                     rowSelection="multiple" // Enable multiple row selection
                     suppressCellFocus={true} // Suppress the focus on cell click
                     domLayout="autoHeight" // Adjust grid height based on content

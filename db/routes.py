@@ -1,3 +1,4 @@
+from fastapi import FastAPI
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -12,9 +13,11 @@ import requests
 import os
 from dotenv import load_dotenv
 import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk import pos_tag
 from collections import Counter
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
+import string
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env.local')
 load_dotenv(dotenv_path)
 
@@ -190,11 +193,93 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 # tag movie reviews
 @router.get("/reviews/movie")
 def tag_movie_reviews(movie_id: int):
-    pass
+
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}/reviews?language=en-US&page=1"
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxMjliNjQxN2Y0ZjkzZDQwMTNlNjRjMDNhZDg4YjYxMSIsIm5iZiI6MTcyNjU1MzE0Ni40MzExMjMsInN1YiI6IjY2ZDFmZmQwYjYzZTMyNTkyNDliOGYyOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cUT8CImCwdd1tm8yg0tSUlS4FOK9Y99848-dFnUknCI"
+    }
+
+    response = requests.get(url, headers=headers)
+    array_full_data = response.json()["results"]
+
+    # map arrary to each content attribute
+    # this is now an array of text reviews
+    reviews = list(map(lambda x: x["content"], array_full_data))
+
+    # Preprocessing function
+    def preprocess_review(review):
+        tokens = word_tokenize(review.lower())
+        # Remove punctuation and non-alpha
+        tokens = [word for word in tokens if word.isalpha()]
+        stop_words = set(stopwords.words('english'))
+        return [word for word in tokens if word not in stop_words]
+
+    # Extract adjectives
+    def extract_adjectives(tokens):
+        pos_tags = pos_tag(tokens)
+        adjectives = [word for word,
+                      pos in pos_tags if pos in ['JJ', 'JJS']]
+        return adjectives
+
+    # Process all reviews
+    all_adjectives = []
+    for review in reviews:
+        tokens = preprocess_review(review)
+        adjectives = extract_adjectives(tokens)
+        all_adjectives.extend(adjectives)
+
+    # Count most common adjectives
+    adj_freq = Counter(all_adjectives)
+    common_adjectives = adj_freq.most_common(5)
+
+    # return only the words
+    return [word for word, freq in common_adjectives]
+
+
 # tag series reviews
 
 
 @router.get("/reviews/tv")
 def tag_movie_reviews(movie_id: int):
-    url = "https://api.themoviedb.org/3/tv/" + movie_id + "/reviews"
-    pass
+    url = f"https://api.themoviedb.org/3/tv/{movie_id}/reviews?language=en-US&page=1"
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxMjliNjQxN2Y0ZjkzZDQwMTNlNjRjMDNhZDg4YjYxMSIsIm5iZiI6MTcyNjU1MzE0Ni40MzExMjMsInN1YiI6IjY2ZDFmZmQwYjYzZTMyNTkyNDliOGYyOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cUT8CImCwdd1tm8yg0tSUlS4FOK9Y99848-dFnUknCI"
+    }
+
+    response = requests.get(url, headers=headers)
+    array_full_data = response.json()["results"]
+
+    # map arrary to each content attribute
+    # this is now an array of text reviews
+    reviews = list(map(lambda x: x["content"], array_full_data))
+
+    # Preprocessing function
+    def preprocess_review(review):
+        tokens = word_tokenize(review.lower())
+        # Remove punctuation and non-alpha
+        tokens = [word for word in tokens if word.isalpha()]
+        stop_words = set(stopwords.words('english'))
+        return [word for word in tokens if word not in stop_words]
+
+    # Extract adjectives
+    def extract_adjectives(tokens):
+        pos_tags = pos_tag(tokens)
+        adjectives = [word for word,
+                      pos in pos_tags if pos in ['JJ', 'JJS']]
+        return adjectives
+
+    # Process all reviews
+    all_adjectives = []
+    for review in reviews:
+        tokens = preprocess_review(review)
+        adjectives = extract_adjectives(tokens)
+        all_adjectives.extend(adjectives)
+
+    # Count most common adjectives
+    adj_freq = Counter(all_adjectives)
+    common_adjectives = adj_freq.most_common(5)
+
+    # return only the words
+    return [word for word, freq in common_adjectives]

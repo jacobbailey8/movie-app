@@ -5,7 +5,7 @@ function ShowTypeSelect({ selectedShowType, setSelectedShowType }) {
 
     const handleClick = (event) => {
         event.preventDefault();
-        setSelectedShowType(event.target.value);
+        selectedShowType === event.target.value ? setSelectedShowType(null) : setSelectedShowType(event.target.value);
     };
 
     useEffect(() => {
