@@ -20,7 +20,7 @@ export default function movies() {
   ]);
   // Column Definitions: Defines the columns to be displayed.
   const [colDefs, setColDefs] = useState([
-    { field: "type", filter: true, checkboxSelection: true }, // field: the key in the rowData object
+    { field: "type", filter: true, checkboxSelection: true },
     { field: "title", filter: true },
     { field: "director", filter: true },
 

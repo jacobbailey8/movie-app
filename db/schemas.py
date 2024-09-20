@@ -71,3 +71,16 @@ class MovieGenre(BaseModel):
 
 class MovieCountry(BaseModel):
     country: str
+
+
+class WatchlistCreate(BaseModel):
+    name: str
+
+
+class WatchlistRead(BaseModel):
+    id: int
+    name: str
+    user_id: int
+
+    class Config:
+        orm_mode = True

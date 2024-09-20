@@ -1,12 +1,11 @@
-from fastapi import FastAPI
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 from database import get_db
-from models import Movie, User
-from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse
-from auth import authenticate_user, create_access_token, get_password_hash
+from models import Movie, User, Watchlist
+from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead
+from auth import authenticate_user, create_access_token, get_password_hash, get_current_user
 from crud import get_user_by_username
 from datetime import timedelta
 import requests
@@ -17,7 +16,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk import pos_tag
 from collections import Counter
-import string
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env.local')
 load_dotenv(dotenv_path)
 
@@ -283,3 +281,49 @@ def tag_movie_reviews(movie_id: int):
 
     # return only the words
     return [word for word, freq in common_adjectives]
+
+
+@router.post("/watchlists/", response_model=WatchlistRead)
+def create_watchlist(
+    watchlist: WatchlistCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Check if the user already has a watchlist with the same name
+    existing_watchlist = db.query(Watchlist).filter(
+        Watchlist.name == watchlist.name, Watchlist.user_id == current_user.id).first()
+    if existing_watchlist:
+        raise HTTPException(
+            status_code=400, detail="Watchlist with this name already exists for the user")
+
+    # Create the new watchlist
+    new_watchlist = Watchlist(
+        name=watchlist.name,
+        user_id=current_user.id,
+        created_at=func.now(),
+        last_updated=func.now()
+    )
+
+    db.add(new_watchlist)
+    db.commit()
+    db.refresh(new_watchlist)
+
+    return new_watchlist
+
+
+# Route to get all watchlists for the current user
+@router.get("/watchlists/", response_model=List[WatchlistRead])
+def get_watchlists(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the database for all watchlists associated with the current user
+    watchlists = db.query(Watchlist).filter(
+        Watchlist.user_id == current_user.id).all()
+
+    # If no watchlists are found, return an empty list or raise an exception if desired
+    if not watchlists:
+        raise HTTPException(
+            status_code=404, detail="No watchlists found for the user")
+
+    return watchlists

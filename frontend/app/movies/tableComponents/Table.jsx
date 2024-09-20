@@ -59,8 +59,6 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
                     suppressCellFocus={true} // Suppress the focus on cell click
                     domLayout="autoHeight" // Adjust grid height based on content
                     suppressRowClickSelection={true} // Prevent row click from affecting selection
-
-
                     onRowClicked={onRowClicked} // Manually handle row selection
                     onSelectionChanged={(event) => {
 
@@ -72,6 +70,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
                 />
 
             </div>
+
             {showRecBtn && <button onClick={handleRecommend} className='bg-orange-400 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Generate Recommendations</button>}
 
         </div>
