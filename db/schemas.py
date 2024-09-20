@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 # Users
@@ -84,3 +84,10 @@ class WatchlistRead(BaseModel):
 
     class Config:
         orm_mode = True
+
+# Define a Pydantic model for the request body
+
+
+class MovieListRequest(BaseModel):
+    watchlist_id: int
+    movie_list: List[int]  # List of movie IDs

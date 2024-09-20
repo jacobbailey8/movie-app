@@ -4,7 +4,7 @@ from sqlalchemy import func
 from typing import List
 from database import get_db
 from models import Movie, User, Watchlist
-from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead
+from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead, MovieListRequest
 from auth import authenticate_user, create_access_token, get_password_hash, get_current_user
 from crud import get_user_by_username
 from datetime import timedelta
@@ -327,3 +327,48 @@ def get_watchlists(
             status_code=404, detail="No watchlists found for the user")
 
     return watchlists
+
+
+@router.post("/watchlists/add/movies")
+def add_movies_to_watchlist(
+    body: MovieListRequest,  # Accept the request body as a Pydantic model
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the watchlist that belongs to the current user
+    watchlist = db.query(Watchlist).filter(
+        Watchlist.id == body.watchlist_id,
+        Watchlist.user_id == current_user.id
+    ).first()
+
+    if not watchlist:
+        raise HTTPException(
+            status_code=404, detail="Watchlist not found or does not belong to the user")
+
+    added_movies = []
+    skipped_movies = []
+
+    for movie_id in body.movie_list:  # Access movie_list from the request body
+        # Query the movie by its ID
+        movie = db.query(Movie).filter(Movie.show_id == movie_id).first()
+
+        if not movie:
+            skipped_movies.append(movie_id)  # Movie not found
+            continue
+
+        # Check if the movie is already in the watchlist
+        if movie in watchlist.movies:
+            # Movie already exists in the watchlist
+            skipped_movies.append(movie_id)
+        else:
+            watchlist.movies.append(movie)  # Add movie to the watchlist
+            added_movies.append(movie_id)
+
+    # Commit the changes to the database
+    db.commit()
+
+    return {
+        "message": "Movies processed",
+        "added_movies": added_movies,
+        "skipped_movies": skipped_movies
+    }

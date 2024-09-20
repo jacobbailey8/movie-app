@@ -60,6 +60,7 @@ export default function SearchForm({ setMovies, setShowForm, setLoading }) {
             url += `&country=${country}`;
         }
 
+
         const response = await fetch(url);
         const data = await response.json();
         // setTotalPages(Math.ceil(data.total / limit));
