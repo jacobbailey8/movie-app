@@ -76,30 +76,13 @@ export default function WatchlistPage() {
     }
 
     return (
-        <div>
-            <h2>{session?.username}'s Watchlists</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <ul className='flex gap-24'>
-
-                {watchlists.map(watchlist => (
+        <div className="container mx-auto">
+            <div className="flex sm:grid sm:grid-cols-3 sm:gap-12 overflow-x-scroll snap-x snap-mandatory">
+                {watchlists.map((watchlist) => (
                     <Watchlist key={watchlist.id} watchlist={watchlist} />
                 ))}
-            </ul>
-
-
-
-            <form onSubmit={addMovie}>
-                <label htmlFor="movieID">Movie ID:</label>
-                <input
-                    type="number"
-                    id="movieID"
-                    value={movieID}
-                    onChange={(e) => setMovieID(e.target.value)}
-                    required
-                />
-                <button type="submit">Add Movie</button>
-
-            </form>
+            </div>
         </div>
+
     );
 }

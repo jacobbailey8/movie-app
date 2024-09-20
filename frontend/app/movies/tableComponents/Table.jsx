@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, use } from 'react'; // React Library
 import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
+import WatchlistSelectModal from './WatchlistSelectModal'; // Watchlist Select Modal Component
 // import "ag-grid-community/styles/ag-grid.css"; // Mandatory
 import '/Users/jacobbailey/Desktop/movie-app/frontend/app/movies/tableComponents/styles/ag-grid-theme-builder.css';
 
@@ -13,19 +14,25 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
     const [paginationPageSize, setPaginationPageSize] = useState(10);
     const [paginationPageSizeSelector, setPaginationPageSizeSelector] = useState([5, 10, 15]);
     const [selections, setSelections] = useState([]);
-    const [showRecBtn, setShowRecBtn] = useState(false);
+    const [showAddMovieBtn, setShowAddMovieBtn] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
 
 
     useEffect(() => {
         if (selections.length > 0) {
-            setShowRecBtn(true);
+            setShowAddMovieBtn(true);
         }
         else {
-            setShowRecBtn(false);
+            setShowAddMovieBtn(false);
         }
     }, [selections]);
 
+    // Handle opening the modal
+    const openModal = () => setIsModalOpen(true);
 
+    // Handle closing the modal
+    const closeModal = () => setIsModalOpen(false);
     const onRowClicked = (event) => {
         // get data from the row
         const movieData = event.data;
@@ -35,8 +42,13 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
     };
 
-    const handleRecommend = () => {
-        // hit reccomendation endpoint here
+    const handleAddMovies = () => {
+
+        // open watchlist select modal
+        openModal();
+
+
+
         console.log(selections);
     }
 
@@ -71,8 +83,13 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
             </div>
 
-            {showRecBtn && <button onClick={handleRecommend} className='bg-orange-400 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Generate Recommendations</button>}
+            {showAddMovieBtn && <button onClick={handleAddMovies} className='bg-orange-400 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Add To Watchlist</button>}
+            <WatchlistSelectModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
 
+
+            />
         </div>
     )
 
