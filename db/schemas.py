@@ -81,6 +81,7 @@ class WatchlistRead(BaseModel):
     id: int
     name: str
     user_id: int
+    movies: List[MovieRead]
 
     class Config:
         orm_mode = True

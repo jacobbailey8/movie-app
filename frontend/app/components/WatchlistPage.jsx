@@ -33,6 +33,7 @@ export default function WatchlistPage() {
 
             const data = await res.json();
             setWatchlists(data); // Set the watchlists in state
+
         } catch (error) {
             setError(error.message);
         }
@@ -64,6 +65,7 @@ export default function WatchlistPage() {
             alert('Movie added successfully');
             setMovieID("");
 
+
         } catch (error) {
             setError(error.message);
         }
@@ -78,9 +80,10 @@ export default function WatchlistPage() {
             <h2>{session?.username}'s Watchlists</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <ul className='flex gap-24'>
-                {/* {watchlists.map(watchlist => (
+
+                {watchlists.map(watchlist => (
                     <Watchlist key={watchlist.id} watchlist={watchlist} />
-                ))} */}
+                ))}
             </ul>
 
 
