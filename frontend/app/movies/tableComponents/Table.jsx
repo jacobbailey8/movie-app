@@ -64,9 +64,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
                     rowData={movies}
                     columnDefs={colDefs.map(colDef => ({ ...colDef, resizable: true }))} // Make columns resizable
-                    // pagination={pagination}
-                    // paginationPageSize={paginationPageSize}
-                    // paginationPageSizeSelector={paginationPageSizeSelector}
+
                     rowSelection="multiple" // Enable multiple row selection
                     suppressCellFocus={true} // Suppress the focus on cell click
                     domLayout="autoHeight" // Adjust grid height based on content
