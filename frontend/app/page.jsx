@@ -44,7 +44,7 @@ export default function HomePage() {
   } else {
     return (
       <div className='sm:pl-56'>
-        <p className="p-4 font-bold text-lg pt-2">{session?.username}'s Dashboard</p>
+        <p className="p-4 font-bold text-lg pt-6">{session?.username}'s Dashboard</p>
         <form onSubmit={handleSubmit} className="p-4">
           <input
             className="p-2 border border-neutral-200 rounded min-w-64 mt-2 sm:mt-0"

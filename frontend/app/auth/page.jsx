@@ -70,9 +70,9 @@ export default function AuthPage() {
 
     return (
         <div className=' bg-neutral-200 sm:flex'>
-            <div className='flex items-center gap-1 bg-neutral-800 p-2 sm:hidden'>
+            <div className='flex items-center gap-1 bg-neutral-800 p-2 py-3 sm:hidden'>
                 <TheatersIcon className='text-orange-400' />
-                <h1 className='text-lg font-semibold text-neutral-200'>FlickFinder</h1>
+                <h1 className='text-xl font-semibold text-neutral-200'>FlickFinder</h1>
             </div>
             <div className='flex flex-col items-center min-h-screen min-w-screen sm:min-w-[50%] pt-20 sm:pt-36 bg-neutral-200 m-0'>
 
