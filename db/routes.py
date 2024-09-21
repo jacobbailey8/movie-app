@@ -4,7 +4,7 @@ from sqlalchemy import func
 from typing import List
 from database import get_db
 from models import Movie, User, Watchlist
-from schemas import MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead, MovieListRequest
+from schemas import WatchlistName, MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead, MovieListRequest
 from auth import authenticate_user, create_access_token, get_password_hash, get_current_user
 from crud import get_user_by_username
 from datetime import timedelta
@@ -294,7 +294,7 @@ def create_watchlist(
         Watchlist.name == watchlist.name, Watchlist.user_id == current_user.id).first()
     if existing_watchlist:
         raise HTTPException(
-            status_code=400, detail="Watchlist with this name already exists for the user")
+            status_code=400, detail="Watchlist with this name already exists")
 
     # Create the new watchlist
     new_watchlist = Watchlist(
@@ -330,39 +330,46 @@ def get_watchlists(
 
 
 @router.post("/watchlists/add/movies")
-def add_movies_to_watchlist(
+def add_movies_to_watchlists(
     body: MovieListRequest,  # Accept the request body as a Pydantic model
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Query the watchlist that belongs to the current user
-    watchlist = db.query(Watchlist).filter(
-        Watchlist.id == body.watchlist_id,
-        Watchlist.user_id == current_user.id
-    ).first()
+    added_movies = {}
+    skipped_movies = {}
 
-    if not watchlist:
-        raise HTTPException(
-            status_code=404, detail="Watchlist not found or does not belong to the user")
+    # Iterate over each watchlist ID in the request
+    for watchlist_id in body.watchlist_ids:
+        # Query the watchlist that belongs to the current user
+        watchlist = db.query(Watchlist).filter(
+            Watchlist.id == watchlist_id,
+            Watchlist.user_id == current_user.id
+        ).first()
 
-    added_movies = []
-    skipped_movies = []
-
-    for movie_id in body.movie_list:  # Access movie_list from the request body
-        # Query the movie by its ID
-        movie = db.query(Movie).filter(Movie.show_id == movie_id).first()
-
-        if not movie:
-            skipped_movies.append(movie_id)  # Movie not found
+        if not watchlist:
+            # Watchlist not found or does not belong to the user, skip it
             continue
 
-        # Check if the movie is already in the watchlist
-        if movie in watchlist.movies:
-            # Movie already exists in the watchlist
-            skipped_movies.append(movie_id)
-        else:
-            watchlist.movies.append(movie)  # Add movie to the watchlist
-            added_movies.append(movie_id)
+        added_movies[watchlist_id] = []
+        skipped_movies[watchlist_id] = []
+
+        # Iterate over the list of movies to add to this watchlist
+        for movie_id in body.movie_list:
+            # Query the movie by its ID
+            movie = db.query(Movie).filter(Movie.show_id == movie_id).first()
+
+            if not movie:
+                skipped_movies[watchlist_id].append(
+                    movie_id)  # Movie not found
+                continue
+
+            # Check if the movie is already in the watchlist
+            if movie in watchlist.movies:
+                # Movie already exists in the watchlist
+                skipped_movies[watchlist_id].append(movie_id)
+            else:
+                watchlist.movies.append(movie)  # Add movie to the watchlist
+                added_movies[watchlist_id].append(movie_id)
 
     # Commit the changes to the database
     db.commit()
@@ -372,3 +379,89 @@ def add_movies_to_watchlist(
         "added_movies": added_movies,
         "skipped_movies": skipped_movies
     }
+
+# Route to get all watchlists name and ids for the current user
+
+
+@router.get("/watchlists/names", response_model=List[WatchlistName])
+def get_watchlists(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the database for all watchlists associated with the current user
+    watchlists = db.query(Watchlist).filter(
+        Watchlist.user_id == current_user.id).all()
+
+    # If no watchlists are found, return an empty list or raise an exception if desired
+    if not watchlists:
+        raise HTTPException(
+            status_code=404, detail="No watchlists found for the user")
+
+    return watchlists
+
+
+@router.delete("/watchlists/{watchlist_id}/movies/{movie_id}")
+def delete_movie_from_watchlist(
+    watchlist_id: int,
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the watchlist that belongs to the current user
+    watchlist = db.query(Watchlist).filter(
+        Watchlist.id == watchlist_id,
+        Watchlist.user_id == current_user.id
+    ).first()
+
+    if not watchlist:
+        raise HTTPException(
+            status_code=404, detail="Watchlist not found or does not belong to the user"
+        )
+
+    # Query the movie by its ID
+    movie = db.query(Movie).filter(Movie.show_id == movie_id).first()
+
+    if not movie:
+        raise HTTPException(
+            status_code=404, detail="Movie not found"
+        )
+
+    # Check if the movie is in the watchlist
+    if movie not in watchlist.movies:
+        raise HTTPException(
+            status_code=400, detail="Movie not in the watchlist"
+        )
+
+    # Remove the movie from the watchlist
+    watchlist.movies.remove(movie)
+
+    # Commit the changes to the database
+    db.commit()
+
+    return {"message": "Movie removed from watchlist"}
+
+
+@router.delete("/watchlists/delete/{watchlist_id}")
+def delete_watchlist(
+    watchlist_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the watchlist that belongs to the current user
+    watchlist = db.query(Watchlist).filter(
+        Watchlist.id == watchlist_id,
+        Watchlist.user_id == current_user.id
+    ).first()
+
+    if not watchlist:
+        raise HTTPException(
+            status_code=404, detail="Watchlist not found or does not belong to the user"
+        )
+
+    # Delete the watchlist
+    db.delete(watchlist)
+
+    # Commit the changes to the database
+    db.commit()
+
+    return {"message": "Watchlist deleted successfully"}

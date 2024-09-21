@@ -81,13 +81,22 @@ class WatchlistRead(BaseModel):
     id: int
     name: str
     user_id: int
+    movies: List[MovieRead]
 
     class Config:
         orm_mode = True
 
-# Define a Pydantic model for the request body
+# model for getting just the names and IDs of the watchlists
+
+
+class WatchlistName(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
 
 
 class MovieListRequest(BaseModel):
-    watchlist_id: int
+    watchlist_ids: List[int]  # Accept a list of watchlist IDs
     movie_list: List[int]  # List of movie IDs

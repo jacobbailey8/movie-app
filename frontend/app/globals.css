@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.ag-theme-quartz {
+    /* Changes the color of the grid text */
+    --ag-foreground-color: #181D1F;
+    /* Changes the color of the grid background */
+    --ag-background-color: #e5e5e5;
+    /* Changes the header color of the top row */
+    --ag-header-background-color: #cfcfcf;
+    /* Changes the hover color of the row*/
+    --ag-active-color: #FB923C;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background-color: #e5e5e5;
+    /* Background of the scrollbar track */
+}
+
+/* Custom scrollbar styles */
+.scroll-container::-webkit-scrollbar {
+    height: 8px;
+    /* Adjust the scrollbar height for horizontal scrolling */
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background-color: #b1b0b0;
+    /* Thumb color */
+    border-radius: 10px;
+    /* Optional: rounded corners */
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+    background-color: #817f7f;
+    /* Thumb color when hovered */
+}

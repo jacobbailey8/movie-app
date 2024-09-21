@@ -7,7 +7,7 @@ export default function HomePage() {
   const { data: session, status } = useSession();
   const [watchlistName, setWatchlistName] = useState("");
   const [error, setError] = useState(null); // State for managing errors
-
+  const [reRender, setReRender] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,9 +31,9 @@ export default function HomePage() {
       }
 
       const data = await res.json();
-      alert('Watchlist created successfully');
       setWatchlistName(""); // Clear input on success
       setError(null); // Clear any previous errors
+      setReRender(!reRender);
     } catch (error) {
       setError(error.message); // Set the error message to display it on the frontend
     }
@@ -44,21 +44,22 @@ export default function HomePage() {
   } else {
     return (
       <div className='sm:pl-56'>
-        <p className="p-4">{session?.username}'s dashboard</p>
+        <p className="p-4 font-bold text-lg pt-6">{session?.username}'s Dashboard</p>
         <form onSubmit={handleSubmit} className="p-4">
-          <label htmlFor="watchlistName">Watchlist Name:</label>
           <input
+            className="p-2 border border-neutral-200 rounded min-w-64 mt-2 sm:mt-0"
             type="text"
             id="watchlistName"
             value={watchlistName}
+            placeholder='Watchlist Name'
             onChange={(e) => setWatchlistName(e.target.value)}
             required
           />
-          <button type="submit">Create Watchlist</button>
+          <button type="submit" className='py-2 px-4 mt-4 sm:mt-0 sm:ml-4 bg-neutral-800 text-slate-50 font-semibold rounded'>Create Watchlist</button>
         </form>
         {/* Display error message if one exists */}
         {error && <p className='p-4 text-red-500'>{error}</p>}
-        <WatchlistPage />
+        <WatchlistPage reRender={reRender} />
       </div>
     );
   }
