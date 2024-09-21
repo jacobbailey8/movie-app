@@ -2,20 +2,19 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import Watchlist from './Watchlist';
-import { type } from 'os';
+import '../../app/globals.css';
 
-export default function WatchlistPage() {
+export default function WatchlistPage({ reRender }) {
     const { data: session, status } = useSession();
     const [watchlists, setWatchlists] = useState([]);
     const [error, setError] = useState(null);
 
-    const [movieID, setMovieID] = useState(""); // can remove later
 
     useEffect(() => {
         if (session) {
             fetchWatchlists();
         }
-    }, [session]);
+    }, [session, reRender]);
 
     const fetchWatchlists = async () => {
         try {
@@ -39,37 +38,7 @@ export default function WatchlistPage() {
         }
     };
 
-    const addMovie = async (e) => {
-        e.preventDefault();
 
-        try {
-            const ID = parseInt(movieID);
-            const res = await fetch(`http://127.0.0.1:8000/api/watchlists/add/movies`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${session.accessToken}`,  // Include token in Authorization header
-                    'Content-Type': 'application/json',                // Include Content-Type header
-                },
-                body: JSON.stringify({
-                    watchlist_id: 1,           // Pass the watchlist_id
-                    movie_list: [ID]           // Pass the movie_list as an array of integers
-                }),
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.detail);
-            }
-
-            const data = await res.json();
-            alert('Movie added successfully');
-            setMovieID("");
-
-
-        } catch (error) {
-            setError(error.message);
-        }
-    };
 
     if (status === 'loading') {
         return <p>Loading...</p>;
@@ -77,12 +46,15 @@ export default function WatchlistPage() {
 
     return (
         <div className="container mx-auto">
-            <div className="flex sm:grid sm:grid-cols-3 sm:gap-12 overflow-x-scroll snap-x snap-mandatory">
+            <div className="scroll-container flex sm:grid sm:grid-cols-[repeat(auto-fit,minmax(370px,1fr))] gap-4 snap-x snap-mandatory overflow-x-auto">
                 {watchlists.map((watchlist) => (
-                    <Watchlist key={watchlist.id} watchlist={watchlist} />
+                    <div key={watchlist.id} className="snap-start min-w-[370px]">
+                        <Watchlist watchlist={watchlist} setWatchlists={setWatchlists} />
+                    </div>
                 ))}
             </div>
         </div>
+
 
     );
 }

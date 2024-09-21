@@ -1,14 +1,15 @@
 'use client';
+import { useSession } from 'next-auth/react';
 import React, { useState, useEffect, useRef, use } from 'react'; // React Library
 import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
 import WatchlistSelectModal from './WatchlistSelectModal'; // Watchlist Select Modal Component
-// import "ag-grid-community/styles/ag-grid.css"; // Mandatory
-import '/Users/jacobbailey/Desktop/movie-app/frontend/app/movies/tableComponents/styles/ag-grid-theme-builder.css';
-
-
+// import '/Users/jacobbailey/Desktop/movie-app/frontend/app/movies/tableComponents/styles/ag-grid-theme-builder.css';
+import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
+import "ag-grid-community/styles/ag-theme-quartz.css";
+import "../../../app/globals.css"
 export default function Table({ movies, setMovies, colDefs, setColDefs, setModalMovie, setModalOpen }) {
 
-
+    const { data: session, status } = useSession();
     // Pagination: The number of rows to be displayed per page.
     const [pagination, setPagination] = useState(true);
     const [paginationPageSize, setPaginationPageSize] = useState(10);
@@ -16,6 +17,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
     const [selections, setSelections] = useState([]);
     const [showAddMovieBtn, setShowAddMovieBtn] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [watchlists, setWatchlists] = useState([]);
 
 
 
@@ -42,11 +44,34 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
     };
 
-    const handleAddMovies = () => {
+    const fetchWatchlists = async () => {
+        try {
+            const res = await fetch('http://127.0.0.1:8000/api/watchlists/names', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${session.accessToken}`, // Include token in Authorization header
+                },
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.detail);
+            }
+
+            const data = await res.json();
+            setWatchlists(data); // Set the watchlists in state
+
+        } catch (error) {
+            setError(error.message);
+        }
+    };
+
+    const handleAddMovies = async () => {
 
         // open watchlist select modal
+        await fetchWatchlists();
         openModal();
-
+        // fecth available watchlists
 
 
         console.log(selections);
@@ -57,7 +82,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
             {/* // wrapping container with theme & size */}
             <div
                 className={
-                    'ag-theme-grid-builder w-full self-center max-h-[28rem] sm:max-h-[38rem] overflow-auto'
+                    'ag-theme-quartz w-full self-center max-h-[28rem] sm:max-h-[38rem] overflow-auto'
                 }
             >
                 <AgGridReact
@@ -85,6 +110,8 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
             <WatchlistSelectModal
                 isOpen={isModalOpen}
                 onClose={closeModal}
+                watchlists={watchlists}
+                movies={selections.map((movie) => movie.show_id)}
 
 
             />

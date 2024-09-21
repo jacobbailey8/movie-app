@@ -15,6 +15,13 @@ const config: Config = {
       },
     },
   },
+  variants: {
+    extend: {
+      backgroundColor: ['checked'],  // Enable checked variant for backgroundColor
+      borderColor: ['checked'],      // Enable checked variant for borderColor
+    },
+  },
   plugins: [],
 };
+
 export default config;

@@ -95,21 +95,21 @@ export default function Modal({ movie, closeModal }) {
                     <h2 className="text-md font-bold mb-4">{movie.title}</h2>
                     <div className='flex justify-around items-center gap-4'>
                         <div className='flex gap-1'>
-                            <Image
+                            {/* <Image
                                 src="/images/tomato.png"  // Path to your image in the public folder
                                 alt="Tomato" // alt text
                                 width={20} // Image width
                                 height={10} // Image height
-                            />
+                            /> */}
                             <div>84%</div>
                         </div>
                         <div className='flex gap-1'>
-                            <Image
+                            {/* <Image
                                 src="/images/popcorn.png"  // Path to your image in the public folder
                                 alt="Tomato" // alt text
                                 width={20} // Image width
                                 height={10} // Image height
-                            />
+                            /> */}
                             <div>{`${(userVote * 10).toFixed()}%`}</div>
                         </div>
                     </div>
