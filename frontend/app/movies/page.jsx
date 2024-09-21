@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SearchForm from './SearchForm.jsx';
 import Table from './tableComponents/Table.jsx'
 import TuneIcon from '@mui/icons-material/Tune';
@@ -15,13 +15,21 @@ export default function movies() {
 
   const [selectedAttributes, setSelectedAttributes] = useState(["title", "release_year"]);
 
-  const [movies, setMovies] = useState([
+  const [movies, setMovies] = useState(() => {
+    // Retrieve the session data or set an empty array if not available
+    const storedMovies = sessionStorage.getItem('movies');
+    return storedMovies ? JSON.parse(storedMovies) : [];
+  });
 
-  ]);
+  useEffect(() => {
+    // Store the movies state in sessionStorage whenever it changes
+    sessionStorage.setItem('movies', JSON.stringify(movies));
+  }, [movies]); // Run this effect whenever `movies` changes
+
   // Column Definitions: Defines the columns to be displayed.
   const [colDefs, setColDefs] = useState([
-    { field: "type", filter: true, checkboxSelection: true },
-    { field: "title", filter: true },
+    { field: "title", filter: true, checkboxSelection: true },
+    { field: "type", filter: true },
     { field: "director", filter: true },
 
   ]);
