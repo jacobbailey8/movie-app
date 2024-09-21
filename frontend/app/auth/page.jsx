@@ -69,12 +69,12 @@ export default function AuthPage() {
     };
 
     return (
-        <div className=' bg-neutral-200'>
+        <div className=' bg-neutral-200 sm:flex'>
             <div className='flex items-center gap-1 bg-neutral-800 p-2 sm:hidden'>
                 <TheatersIcon className='text-orange-400' />
                 <h1 className='text-lg font-semibold text-neutral-200'>FlickFinder</h1>
             </div>
-            <div className='flex flex-col  items-center min-h-screen min-w-screen pt-20 bg-neutral-200 m-0'>
+            <div className='flex flex-col items-center min-h-screen min-w-screen sm:min-w-[50%] pt-20 sm:pt-36 bg-neutral-200 m-0'>
 
 
                 <h1 className='text-3xl font-bold'>{isLogin ? 'Welcome back' : 'Create an account'}</h1>
@@ -115,6 +115,10 @@ export default function AuthPage() {
                     {isLogin ? 'Create an account' : 'Log in'}
                 </button>
             </div>
+            <div className="hidden bg-opacity-55 sm:block sm:justify-center sm:items-center sm:bg-black sm:min-h-screen sm:min-w-full sm:filter sm:brightness-50 sm:bg-cover sm:bg-center" style={{ backgroundImage: `url('https://designwithred.com/wp-content/uploads/2020/09/50-List-of-Best-Movie-Posters-2020-DesignWithRed.jpg')` }}>
+
+            </div>
+
         </div>
     );
 }
