@@ -12,7 +12,10 @@ export default function AuthPage() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState(false);
     const router = useRouter();
+
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,14 +29,15 @@ export default function AuthPage() {
                 });
 
                 if (res.ok) {
+                    setError(false);
                     router.push('/');
                 } else {
-
+                    setError(true);
 
                 }
             }
             catch (e) {
-                console.log('nope')
+
                 console.error(e);
             }
 
@@ -46,6 +50,7 @@ export default function AuthPage() {
             });
 
             if (res.ok) {
+                setError(false);
                 const data = await res.json();
                 console.log('Sign-up successful', data);
 
@@ -57,12 +62,15 @@ export default function AuthPage() {
                 });
 
                 if (result.ok) {
+                    setError(false);
                     window.location.href = "/";
                 } else {
+                    setError(true);
                     console.error("Failed to sign in after sign-up");
                 }
 
             } else {
+                setError(true);
                 console.error('Sign-up failed');
             }
         }
@@ -75,6 +83,7 @@ export default function AuthPage() {
                 <h1 className='text-xl font-semibold text-neutral-200'>FlickFinder</h1>
             </div>
             <div className='flex flex-col items-center min-h-screen min-w-screen sm:min-w-[50%] pt-20 sm:pt-36 bg-neutral-200 m-0'>
+                {/* <div className='hidden sm:block top-0 left-0 w-full bg-black p-4'>FlickFinder</div> */}
 
 
                 <h1 className='text-3xl font-bold'>{isLogin ? 'Welcome back' : 'Create an account'}</h1>
@@ -114,6 +123,9 @@ export default function AuthPage() {
                 <button onClick={() => setIsLogin(!isLogin)} className='mt-12 underline text-sm'>
                     {isLogin ? 'Create an account' : 'Log in'}
                 </button>
+                {(error && isLogin) && <p className='text-red-500 mt-4'>Failed to login</p>}
+                {(error && !isLogin) && <p className='text-red-500 mt-4'>Failed to sign up</p>}
+
             </div>
             <div className="hidden bg-opacity-55 sm:block sm:justify-center sm:items-center sm:bg-black sm:min-h-screen sm:min-w-full sm:filter sm:brightness-50 sm:bg-cover sm:bg-center" style={{ backgroundImage: `url('https://designwithred.com/wp-content/uploads/2020/09/50-List-of-Best-Movie-Posters-2020-DesignWithRed.jpg')` }}>
 

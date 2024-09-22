@@ -5,8 +5,7 @@ from typing import List
 from database import get_db
 from models import Movie, User, Watchlist
 from schemas import WatchlistName, MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead, MovieListRequest
-from auth import authenticate_user, create_access_token, get_password_hash, get_current_user
-from crud import get_user_by_username
+from auth import authenticate_user, create_access_token, get_password_hash, get_current_user, get_user_by_username, get_user_by_email
 from datetime import timedelta
 import requests
 import os
@@ -140,7 +139,12 @@ def create_user_route(response: Response, user: UserCreate, db: Session = Depend
     db_user = get_user_by_username(db, username=user.username)
     if db_user:
         raise HTTPException(
-            status_code=400, detail="Username already registered")
+            status_code=400, detail="Username already exists")
+    db_user = get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(
+            status_code=400, detail="Email already registered")
+
     hashed_password = get_password_hash(user.password)
     new_user = User(username=user.username, email=user.email,
                     hashed_password=hashed_password)
@@ -465,3 +469,93 @@ def delete_watchlist(
     db.commit()
 
     return {"message": "Watchlist deleted successfully"}
+
+
+# route to get recommended movies based on user watchlist
+@router.get("/watchlists/recommendations/{watchlist_id}")
+def get_recommendations(
+    watchlist_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the watchlist that belongs to the current user
+    watchlist = db.query(Watchlist).filter(
+        Watchlist.id == watchlist_id,
+        Watchlist.user_id == current_user.id
+    ).first()
+
+    if not watchlist:
+        raise HTTPException(
+            status_code=404, detail="Watchlist not found or does not belong to the user"
+        )
+
+    # get the tmdb id of the movies in the watchlist
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxMjliNjQxN2Y0ZjkzZDQwMTNlNjRjMDNhZDg4YjYxMSIsIm5iZiI6MTcyNjk3OTM2MS40NzczMDksInN1YiI6IjY2ZDFmZmQwYjYzZTMyNTkyNDliOGYyOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ZE7_mvYX74boydtRkMqw_jRXhLIxJxt4LKCNyw4w-tI"
+    }
+
+    movie_tmdb_ids = []
+    for movie in watchlist.movies:
+        if movie.type == "Movie":
+            url = f"https://api.themoviedb.org/3/search/movie?query={movie.title}&include_adult=false&language=en-US&page=1"
+        else:
+            url = f"https://api.themoviedb.org/3/search/tv?query={movie.title}&include_adult=false&language=en-US&page=1"
+
+        try:
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+
+            # Check if "results" exist and are non-empty
+            if "results" not in response_data or not response_data["results"]:
+                raise HTTPException(
+                    status_code=404, detail=f"TMDB did not return results for {movie.title}")
+
+            movie_tmdb_ids.append(
+                {'id': response_data["results"][0]["id"], 'title': movie.title, 'type': movie.type})
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=404, detail=f"Could not get TMDB ID for movie {movie.title}: {str(e)}")
+
+    # Get recommendations
+    recommendations_final = []
+    for movie in movie_tmdb_ids:
+        if movie["type"] == "Movie":
+            url = f"https://api.themoviedb.org/3/movie/{movie['id']}/recommendations?language=en-US&page=1"
+        else:
+            url = f"https://api.themoviedb.org/3/tv/{movie['id']}/recommendations?language=en-US&page=1"
+
+        try:
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+
+            # Check if "results" exist and are non-empty
+            if "results" in response_data and response_data["results"]:
+                # Append movie id, title, and type from the results
+                recommendations_final.extend([{
+                    "id": rec["id"],
+                    "title": rec["title"] if "title" in rec else rec["name"],
+                    # Propagating the type (Movie/TV) from original list
+                    "type": movie["type"]
+                } for rec in response_data["results"]])
+            else:
+                raise HTTPException(
+                    status_code=404, detail=f"No recommendations found for movie {movie['id']}")
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=404, detail=f"Could not get recommendations for movie {movie['id']}: {str(e)}")
+
+    # Find the counts of each movie by id, title, and type
+    movie_counts = Counter([(rec["id"], rec["title"], rec["type"])
+                           for rec in recommendations_final])
+
+    # Get the top 5 recommendations
+    top_5 = movie_counts.most_common(10)
+
+    # Convert the list of tuples into a list of dictionaries with id, title, type, and count
+    top_5_dict = [{"movie_id": movie_id, "title": title, "type": type_,
+                   "count": count} for (movie_id, title, type_), count in top_5]
+
+    return {'top_5': top_5_dict}

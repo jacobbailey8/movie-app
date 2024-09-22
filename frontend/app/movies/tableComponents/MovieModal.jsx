@@ -26,9 +26,6 @@ export default function Modal({ movie, closeModal }) {
                         Authorization: `Bearer ${ACCESS_TOKEN}`
                     }
                 };
-
-
-
                 try {
                     let base_url = 'https://api.themoviedb.org/3/search/movie?query='
                     if (movie.type !== 'Movie') {
@@ -114,7 +111,7 @@ export default function Modal({ movie, closeModal }) {
                         </div>
                     </div>
                     <div className='flex flex-wrap gap-2 items-center mt-4 mb-2 justify-center max-w-64'>
-                        {tags.map((tag, index) => (
+                        {tags && tags.map((tag, index) => (
                             <div key={index} className='bg-gray-200 p-2 rounded-md'>{tag}</div>
                         ))}
 

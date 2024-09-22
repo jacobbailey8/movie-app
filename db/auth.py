@@ -2,7 +2,6 @@ from passlib.context import CryptContext
 from jose import jwt
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
-from crud import get_user_by_username
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -73,3 +72,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
 
     return user
+
+
+def get_user_by_username(db: Session, username: str):
+    return db.query(User).filter(User.username == username).first()
+
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()

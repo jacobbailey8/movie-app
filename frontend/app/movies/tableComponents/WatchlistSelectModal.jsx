@@ -16,11 +16,6 @@ export default function WatchlistSelectModal({ isOpen, onClose, watchlists, movi
     };
 
     const addMovies = async () => {
-        console.log(parseInt(selectedWatchlist[0]));
-        console.log(movies);
-
-
-
         try {
             const res = await fetch(`http://127.0.0.1:8000/api/watchlists/add/movies`, {
                 method: 'POST',
@@ -38,10 +33,13 @@ export default function WatchlistSelectModal({ isOpen, onClose, watchlists, movi
                 const errorData = await res.json();
                 throw new Error(errorData.detail);
             }
-
-
-
-
+            else {
+                const data = await res.json();
+                const addedMovies = data.added_movies;
+                const numWatchlists = Object.keys(addedMovies).length;
+                const numMovies = Object.values(addedMovies).reduce((acc, val) => acc + val.length, 0);
+                console.log(`Added ${numMovies} movies to ${numWatchlists} watchlists`);
+            }
 
         } catch (error) {
             console.error(error);

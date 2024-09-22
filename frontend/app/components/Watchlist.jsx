@@ -4,11 +4,35 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-function Watchlist({ watchlist, setWatchlists }) {
+function Watchlist({ watchlist, setWatchlists, setRecommendations, setRecommendationListTitle }) {
     const [watchlistMovies, setWatchlistMovies] = useState(watchlist.movies);
     const { data: session, status } = useSession();
 
     const handleRecommend = async () => {
+        // recommend movies
+        try {
+            const res = await fetch(`http://127.0.0.1:8000/api/watchlists/recommendations/${watchlist.id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.accessToken}`, // Include token from session
+                },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log(data);
+                setRecommendations(data.top_5);
+                setRecommendationListTitle(watchlist.name);
+            }
+            else {
+                const errorData = await res.json();
+                throw new Error(errorData.detail);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+
     };
 
     const handleDeleteWatchlist = async () => {
