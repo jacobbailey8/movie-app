@@ -29,6 +29,7 @@ export default function MovieTitleAutocomplete({ setTitle }) {
         }
         else {
             setTitles([]);
+            setTitle('');
         }
 
 
