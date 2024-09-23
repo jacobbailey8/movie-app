@@ -1,8 +1,10 @@
 'use client';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useRef, use } from 'react'; // React Library
 import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
 import WatchlistSelectModal from './WatchlistSelectModal'; // Watchlist Select Modal Component
+import ColumnSelector from './ColumnSelector'; // Column Selector Component
 // import '/Users/jacobbailey/Desktop/movie-app/frontend/app/movies/tableComponents/styles/ag-grid-theme-builder.css';
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -10,6 +12,8 @@ import "../../../app/globals.css"
 export default function Table({ movies, setMovies, colDefs, setColDefs, setModalMovie, setModalOpen }) {
 
     const { data: session, status } = useSession();
+    const router = useRouter();
+
     // Pagination: The number of rows to be displayed per page.
     const [pagination, setPagination] = useState(true);
     const [paginationPageSize, setPaginationPageSize] = useState(10);
@@ -19,7 +23,9 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [watchlists, setWatchlists] = useState([]);
 
-
+    useEffect(() => {
+        fetchWatchlists();
+    }), []
 
     useEffect(() => {
         if (selections.length > 0) {
@@ -62,7 +68,7 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
             setWatchlists(data); // Set the watchlists in state
 
         } catch (error) {
-            setError(error.message);
+            console.error(error);
         }
     };
 
@@ -74,11 +80,12 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
         // fecth available watchlists
 
 
-        console.log(selections);
-    }
+    };
 
     return (
+
         <div className='w-full'>
+            <ColumnSelector colDefs={colDefs} setColDefs={setColDefs} />
             {/* // wrapping container with theme & size */}
             <div
                 className={
@@ -106,7 +113,8 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
 
             </div>
 
-            {showAddMovieBtn && <button onClick={handleAddMovies} className='bg-orange-400 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Add To Watchlist</button>}
+            {(showAddMovieBtn && watchlists.length > 0) && <button onClick={handleAddMovies} className='bg-neutral-800 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Add To Watchlist</button>}
+            {(showAddMovieBtn && watchlists.length === 0) && <button onClick={() => router.push('/')} className='bg-neutral-800 p-4 rounded text-lg font-bold mt-6 text-slate-50'>Create a watchlist</button>}
             <WatchlistSelectModal
                 isOpen={isModalOpen}
                 onClose={closeModal}

@@ -5,11 +5,12 @@ from typing import List
 from database import get_db
 from models import Movie, User, Watchlist
 from schemas import WatchlistName, MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead, MovieListRequest
-from auth import authenticate_user, create_access_token, get_password_hash, get_current_user
-from crud import get_user_by_username
+from auth import authenticate_user, create_access_token, get_password_hash, get_current_user, get_user_by_username, get_user_by_email
+from nlp import get_sentiment, extract_phrases, clean_review_text
 from datetime import timedelta
 import requests
 import os
+import re
 from dotenv import load_dotenv
 import nltk
 from nltk.corpus import stopwords
@@ -62,6 +63,7 @@ def read_movie_by_title(title: str, db: Session = Depends(get_db)):
 
 @router.get('/movies/filter/', response_model=MovieList)
 def read_movies_by_form(
+    title: str = None,
     show_type: str = None,
     director: str = None,
     actor: str = None,
@@ -71,10 +73,12 @@ def read_movies_by_form(
     min_release_year: int = None,
     max_release_year: int = None,
     skip: int = 0,
-    limit: int = 10,
+    limit: int = 20,
     db: Session = Depends(get_db)
 ):
     movies = db.query(Movie)
+    if title:
+        movies = movies.filter(func.upper(Movie.title).contains(title.upper()))
     if show_type:
         movies = movies.filter(Movie.type == show_type)
     if director:
@@ -96,6 +100,9 @@ def read_movies_by_form(
 
     total = movies.count()
     movies = movies.offset(skip).all()
+
+    # limit to limit number of movies
+    movies = movies[:limit]
 
     return {
         'total': total,
@@ -140,7 +147,12 @@ def create_user_route(response: Response, user: UserCreate, db: Session = Depend
     db_user = get_user_by_username(db, username=user.username)
     if db_user:
         raise HTTPException(
-            status_code=400, detail="Username already registered")
+            status_code=400, detail="Username already exists")
+    db_user = get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(
+            status_code=400, detail="Email already registered")
+
     hashed_password = get_password_hash(user.password)
     new_user = User(username=user.username, email=user.email,
                     hashed_password=hashed_password)
@@ -205,34 +217,35 @@ def tag_movie_reviews(movie_id: int):
     # this is now an array of text reviews
     reviews = list(map(lambda x: x["content"], array_full_data))
 
-    # Preprocessing function
-    def preprocess_review(review):
-        tokens = word_tokenize(review.lower())
-        # Remove punctuation and non-alpha
-        tokens = [word for word in tokens if word.isalpha()]
-        stop_words = set(stopwords.words('english'))
-        return [word for word in tokens if word not in stop_words]
-
-    # Extract adjectives
-    def extract_adjectives(tokens):
-        pos_tags = pos_tag(tokens)
-        adjectives = [word for word,
-                      pos in pos_tags if pos in ['JJ', 'JJS']]
-        return adjectives
-
     # Process all reviews
-    all_adjectives = []
+    all_phrases = []
+    sentiment_scores = []
     for review in reviews:
-        tokens = preprocess_review(review)
-        adjectives = extract_adjectives(tokens)
-        all_adjectives.extend(adjectives)
+        # Clean each review text
+        cleaned_review = clean_review_text(review)
 
-    # Count most common adjectives
-    adj_freq = Counter(all_adjectives)
-    common_adjectives = adj_freq.most_common(5)
+        sentiment_score = get_sentiment(cleaned_review)
+        sentiment_scores.append(sentiment_score)
+        phrases = extract_phrases(cleaned_review)
+        all_phrases.extend(phrases)
 
-    # return only the words
-    return [word for word, freq in common_adjectives]
+    # Get the overall sentiment of the reviews
+    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+    sen = ""
+    if avg_sentiment >= 0.65:
+        sen = "Positive"
+    elif avg_sentiment <= 0.35:
+        sen = "Negative"
+    else:
+        sen = "Neutral"
+
+    # Count most common adjective-noun phrases
+    phrase_freq = Counter(all_phrases)
+    common_phrases = phrase_freq.most_common(5)
+    tags = [phrase for phrase, freq in common_phrases]
+
+    # Return most common sentiment-based phrases
+    return {'tags': tags, 'sentiment': sen}
 
 
 # tag series reviews
@@ -253,34 +266,35 @@ def tag_movie_reviews(movie_id: int):
     # this is now an array of text reviews
     reviews = list(map(lambda x: x["content"], array_full_data))
 
-    # Preprocessing function
-    def preprocess_review(review):
-        tokens = word_tokenize(review.lower())
-        # Remove punctuation and non-alpha
-        tokens = [word for word in tokens if word.isalpha()]
-        stop_words = set(stopwords.words('english'))
-        return [word for word in tokens if word not in stop_words]
-
-    # Extract adjectives
-    def extract_adjectives(tokens):
-        pos_tags = pos_tag(tokens)
-        adjectives = [word for word,
-                      pos in pos_tags if pos in ['JJ', 'JJS']]
-        return adjectives
-
     # Process all reviews
-    all_adjectives = []
+    all_phrases = []
+    sentiment_scores = []
     for review in reviews:
-        tokens = preprocess_review(review)
-        adjectives = extract_adjectives(tokens)
-        all_adjectives.extend(adjectives)
+        # Clean each review text
+        cleaned_review = clean_review_text(review)
 
-    # Count most common adjectives
-    adj_freq = Counter(all_adjectives)
-    common_adjectives = adj_freq.most_common(5)
+        sentiment_score = get_sentiment(cleaned_review)
+        sentiment_scores.append(sentiment_score)
+        phrases = extract_phrases(cleaned_review)
+        all_phrases.extend(phrases)
 
-    # return only the words
-    return [word for word, freq in common_adjectives]
+    # Get the overall sentiment of the reviews
+    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+    sen = ""
+    if avg_sentiment >= 0.1:
+        sen = "Positive"
+    elif avg_sentiment <= -0.1:
+        sen = "Negative"
+    else:
+        sen = "Neutral"
+
+    # Count most common adjective-noun phrases
+    phrase_freq = Counter(all_phrases)
+    common_phrases = phrase_freq.most_common(5)
+    tags = [phrase for phrase, freq in common_phrases]
+
+    # Return most common sentiment-based phrases
+    return {'tags': tags, 'sentiment': sen}
 
 
 @router.post("/watchlists/", response_model=WatchlistRead)
@@ -465,3 +479,97 @@ def delete_watchlist(
     db.commit()
 
     return {"message": "Watchlist deleted successfully"}
+
+
+# route to get recommended movies based on user watchlist
+@router.get("/watchlists/recommendations/{watchlist_id}")
+def get_recommendations(
+    watchlist_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Query the watchlist that belongs to the current user
+    watchlist = db.query(Watchlist).filter(
+        Watchlist.id == watchlist_id,
+        Watchlist.user_id == current_user.id
+    ).first()
+
+    if not watchlist:
+        raise HTTPException(
+            status_code=404, detail="Watchlist not found or does not belong to the user"
+        )
+
+    # get the tmdb id of the movies in the watchlist
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxMjliNjQxN2Y0ZjkzZDQwMTNlNjRjMDNhZDg4YjYxMSIsIm5iZiI6MTcyNjk3OTM2MS40NzczMDksInN1YiI6IjY2ZDFmZmQwYjYzZTMyNTkyNDliOGYyOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ZE7_mvYX74boydtRkMqw_jRXhLIxJxt4LKCNyw4w-tI"
+    }
+
+    movie_tmdb_ids = []
+    for movie in watchlist.movies:
+        if movie.type == "Movie":
+            url = f"https://api.themoviedb.org/3/search/movie?query={movie.title}&include_adult=false&language=en-US&page=1"
+        else:
+            url = f"https://api.themoviedb.org/3/search/tv?query={movie.title}&include_adult=false&language=en-US&page=1"
+
+        try:
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+
+            # Check if "results" exist and are non-empty
+            if "results" not in response_data or not response_data["results"]:
+                raise HTTPException(
+                    status_code=404, detail=f"TMDB did not return results for {movie.title}")
+
+            movie_tmdb_ids.append(
+                {'id': response_data["results"][0]["id"], 'title': movie.title, 'type': movie.type})
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=404, detail=f"Could not get TMDB ID for movie {movie.title}: {str(e)}")
+
+    # Get recommendations
+    recommendations_final = []
+    for movie in movie_tmdb_ids:
+        if movie["type"] == "Movie":
+            url = f"https://api.themoviedb.org/3/movie/{movie['id']}/recommendations?language=en-US&page=1"
+        else:
+            url = f"https://api.themoviedb.org/3/tv/{movie['id']}/recommendations?language=en-US&page=1"
+
+        try:
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+
+            # Check if "results" exist and are non-empty
+            if "results" in response_data and response_data["results"]:
+                # Append movie id, title, and type from the results
+                recommendations_final.extend([{
+                    "id": rec["id"],
+                    "title": rec["title"] if "title" in rec else rec["name"],
+                    # Propagating the type (Movie/TV) from original list
+                    "type": movie["type"]
+                } for rec in response_data["results"]])
+            else:
+                raise HTTPException(
+                    status_code=404, detail=f"No recommendations found for movie {movie['id']}")
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=404, detail=f"Could not get recommendations for movie {movie['id']}: {str(e)}")
+
+    # make sure the recommendations are not also in the watchlist
+    recommendations_final = [
+        rec for rec in recommendations_final if rec["title"] not in [movie.title for movie in watchlist.movies]]
+
+    # Find the counts of each movie by id, title, and type
+    movie_counts = Counter([(rec["id"], rec["title"], rec["type"])
+                           for rec in recommendations_final])
+
+    # Get the top 5 recommendations
+    top_5 = movie_counts.most_common(10)
+
+    # Convert the list of tuples into a list of dictionaries with id, title, type, and count
+    top_5_dict = [{"movie_id": movie_id, "title": title, "type": type_,
+                   "count": count} for (movie_id, title, type_), count in top_5]
+
+    return {'top_5': top_5_dict}

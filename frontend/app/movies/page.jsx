@@ -31,6 +31,14 @@ export default function movies() {
     { field: "title", filter: true, checkboxSelection: true },
     { field: "type", filter: true },
     { field: "director", filter: true },
+    { field: "cast", filter: true },
+    { field: "country", filter: true },
+    { field: "release_year", filter: true },
+    { field: "rating", filter: true },
+    { field: "duration", filter: true },
+    { field: "listed_in", filter: true },
+    { field: "streaming_service", filter: true },
+    { field: "num_seasons", filter: true },
 
   ]);
   return (
