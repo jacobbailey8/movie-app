@@ -6,9 +6,11 @@ from database import get_db
 from models import Movie, User, Watchlist
 from schemas import WatchlistName, MovieRead, MovieList, MovieTitle, MovieGenre, MovieCountry, UserRead, UserCreate, UserLogin, SignupResponse, WatchlistCreate, WatchlistRead, MovieListRequest
 from auth import authenticate_user, create_access_token, get_password_hash, get_current_user, get_user_by_username, get_user_by_email
+from nlp import get_sentiment, extract_phrases, clean_review_text
 from datetime import timedelta
 import requests
 import os
+import re
 from dotenv import load_dotenv
 import nltk
 from nltk.corpus import stopwords
@@ -209,34 +211,35 @@ def tag_movie_reviews(movie_id: int):
     # this is now an array of text reviews
     reviews = list(map(lambda x: x["content"], array_full_data))
 
-    # Preprocessing function
-    def preprocess_review(review):
-        tokens = word_tokenize(review.lower())
-        # Remove punctuation and non-alpha
-        tokens = [word for word in tokens if word.isalpha()]
-        stop_words = set(stopwords.words('english'))
-        return [word for word in tokens if word not in stop_words]
-
-    # Extract adjectives
-    def extract_adjectives(tokens):
-        pos_tags = pos_tag(tokens)
-        adjectives = [word for word,
-                      pos in pos_tags if pos in ['JJ', 'JJS']]
-        return adjectives
-
     # Process all reviews
-    all_adjectives = []
+    all_phrases = []
+    sentiment_scores = []
     for review in reviews:
-        tokens = preprocess_review(review)
-        adjectives = extract_adjectives(tokens)
-        all_adjectives.extend(adjectives)
+        # Clean each review text
+        cleaned_review = clean_review_text(review)
 
-    # Count most common adjectives
-    adj_freq = Counter(all_adjectives)
-    common_adjectives = adj_freq.most_common(5)
+        sentiment_score = get_sentiment(cleaned_review)
+        sentiment_scores.append(sentiment_score)
+        phrases = extract_phrases(cleaned_review)
+        all_phrases.extend(phrases)
 
-    # return only the words
-    return [word for word, freq in common_adjectives]
+    # Get the overall sentiment of the reviews
+    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+    sen = ""
+    if avg_sentiment >= 0.65:
+        sen = "Positive"
+    elif avg_sentiment <= 0.35:
+        sen = "Negative"
+    else:
+        sen = "Neutral"
+
+    # Count most common adjective-noun phrases
+    phrase_freq = Counter(all_phrases)
+    common_phrases = phrase_freq.most_common(5)
+    tags = [phrase for phrase, freq in common_phrases]
+
+    # Return most common sentiment-based phrases
+    return {'tags': tags, 'sentiment': sen}
 
 
 # tag series reviews
@@ -257,34 +260,35 @@ def tag_movie_reviews(movie_id: int):
     # this is now an array of text reviews
     reviews = list(map(lambda x: x["content"], array_full_data))
 
-    # Preprocessing function
-    def preprocess_review(review):
-        tokens = word_tokenize(review.lower())
-        # Remove punctuation and non-alpha
-        tokens = [word for word in tokens if word.isalpha()]
-        stop_words = set(stopwords.words('english'))
-        return [word for word in tokens if word not in stop_words]
-
-    # Extract adjectives
-    def extract_adjectives(tokens):
-        pos_tags = pos_tag(tokens)
-        adjectives = [word for word,
-                      pos in pos_tags if pos in ['JJ', 'JJS']]
-        return adjectives
-
     # Process all reviews
-    all_adjectives = []
+    all_phrases = []
+    sentiment_scores = []
     for review in reviews:
-        tokens = preprocess_review(review)
-        adjectives = extract_adjectives(tokens)
-        all_adjectives.extend(adjectives)
+        # Clean each review text
+        cleaned_review = clean_review_text(review)
 
-    # Count most common adjectives
-    adj_freq = Counter(all_adjectives)
-    common_adjectives = adj_freq.most_common(5)
+        sentiment_score = get_sentiment(cleaned_review)
+        sentiment_scores.append(sentiment_score)
+        phrases = extract_phrases(cleaned_review)
+        all_phrases.extend(phrases)
 
-    # return only the words
-    return [word for word, freq in common_adjectives]
+    # Get the overall sentiment of the reviews
+    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+    sen = ""
+    if avg_sentiment >= 0.1:
+        sen = "Positive"
+    elif avg_sentiment <= -0.1:
+        sen = "Negative"
+    else:
+        sen = "Neutral"
+
+    # Count most common adjective-noun phrases
+    phrase_freq = Counter(all_phrases)
+    common_phrases = phrase_freq.most_common(5)
+    tags = [phrase for phrase, freq in common_phrases]
+
+    # Return most common sentiment-based phrases
+    return {'tags': tags, 'sentiment': sen}
 
 
 @router.post("/watchlists/", response_model=WatchlistRead)
