@@ -63,6 +63,7 @@ def read_movie_by_title(title: str, db: Session = Depends(get_db)):
 
 @router.get('/movies/filter/', response_model=MovieList)
 def read_movies_by_form(
+    title: str = None,
     show_type: str = None,
     director: str = None,
     actor: str = None,
@@ -72,10 +73,12 @@ def read_movies_by_form(
     min_release_year: int = None,
     max_release_year: int = None,
     skip: int = 0,
-    limit: int = 10,
+    limit: int = 20,
     db: Session = Depends(get_db)
 ):
     movies = db.query(Movie)
+    if title:
+        movies = movies.filter(func.upper(Movie.title).contains(title.upper()))
     if show_type:
         movies = movies.filter(Movie.type == show_type)
     if director:
@@ -97,6 +100,9 @@ def read_movies_by_form(
 
     total = movies.count()
     movies = movies.offset(skip).all()
+
+    # limit to limit number of movies
+    movies = movies[:limit]
 
     return {
         'total': total,
@@ -550,6 +556,10 @@ def get_recommendations(
         except Exception as e:
             raise HTTPException(
                 status_code=404, detail=f"Could not get recommendations for movie {movie['id']}: {str(e)}")
+
+    # make sure the recommendations are not also in the watchlist
+    recommendations_final = [
+        rec for rec in recommendations_final if rec["title"] not in [movie.title for movie in watchlist.movies]]
 
     # Find the counts of each movie by id, title, and type
     movie_counts = Counter([(rec["id"], rec["title"], rec["type"])

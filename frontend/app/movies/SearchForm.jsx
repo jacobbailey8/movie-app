@@ -7,9 +7,11 @@ import StreamingServiceSelect from './formComponents/StreamingServiceSelect';
 import YearRange from './formComponents/YearRange';
 import GenreAutocomplete from './formComponents/GenreSelect';
 import CountryAutocomplete from './formComponents/CountrySelect';
+import MovieTitleAutocomplete from './formComponents/MovieTitleAutocomplete';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 export default function SearchForm({ setMovies, setShowForm, setLoading }) {
+    const [title, setTitle] = useState('');
     const [selectedShowType, setSelectedShowType] = useState(null);
     const [director, setDirector] = useState('');
     const [actor, setActor] = useState('');
@@ -20,8 +22,20 @@ export default function SearchForm({ setMovies, setShowForm, setLoading }) {
     const [country, setCountry] = useState(null);
 
 
-    const [pageNum, setPageNum] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    // const [pageNum, setPageNum] = useState(1);
+    // const [totalPages, setTotalPages] = useState(1);
+
+    const [pageNum, setPageNum] = useState(() => {
+        // Retrieve the session data or set an empty array if not available
+        const pageNumberSaved = sessionStorage.getItem('pageNum');
+        return pageNumberSaved ? JSON.parse(pageNumberSaved) : 1;
+    });
+
+    const [totalPages, setTotalPages] = useState(() => {
+        // Retrieve the session data or set an empty array if not available
+        const totalPagesSaved = sessionStorage.getItem('totalPages');
+        return totalPagesSaved ? JSON.parse(totalPagesSaved) : 1;
+    });
 
 
 
@@ -30,11 +44,13 @@ export default function SearchForm({ setMovies, setShowForm, setLoading }) {
         setLoading(true);
 
         // handle api call
-        // const limit = 10;
-        // const skip = (page - 1) * limit;
-        const skip = 0;
+        const limit = 20;
+        const skip = (page - 1) * limit;
 
         let url = `http://localhost:8000/api/movies/filter/?skip=${skip}&`;
+        if (title) {
+            url += `title=${title}`;
+        }
         if (selectedShowType) {
             url += `&show_type=${selectedShowType}`;
         }
@@ -63,17 +79,29 @@ export default function SearchForm({ setMovies, setShowForm, setLoading }) {
 
         const response = await fetch(url);
         const data = await response.json();
-        // setTotalPages(Math.ceil(data.total / limit));
+        setTotalPages(Math.ceil(data.total / limit));
+        sessionStorage.setItem('pageNum', JSON.stringify(page));
+        sessionStorage.setItem('totalPages', JSON.stringify(Math.ceil(data.total / limit)));
         setLoading(false);
-        setShowForm(false);
+        // setShowForm(false);
+        sessionStorage.setItem('movies', JSON.stringify(data.movies));
         setMovies(data.movies);
+
     };
+
+    const handleNewSearch = async (event, page = 1) => {
+        handleSearch(event, page);
+        sessionStorage.setItem('pageNum', JSON.stringify(1));
+        setPageNum(1);
+
+    }
 
     return (
 
-        <div className='p-4 '>
+        <div className='p-4'>
             {/* search form */}
-            <form onSubmit={(e) => handleSearch(e, 1)} className=''>
+            <form onSubmit={(e) => handleNewSearch(e, 1)} className=''>
+                <MovieTitleAutocomplete setTitle={setTitle} />
                 <ShowTypeSelect selectedShowType={selectedShowType} setSelectedShowType={setSelectedShowType} />
                 <DirectorInput director={director} setDirector={setDirector} />
                 <ActorInput actor={actor} setActor={setActor} />
@@ -88,12 +116,12 @@ export default function SearchForm({ setMovies, setShowForm, setLoading }) {
             </form>
 
             {/* pagination */}
-            {/* <div className='flex items-center'>
-                {pageNum > 1 ? <button onClick={(e) => { handleSearch(e, pageNum - 1); setPageNum(pageNum - 1) }} className='text-slate-300 bg-slate-600 p-2 rounded-sm'>Prev</button> : <button className='text-slate-300 bg-slate-600 p-2 rounded-sm opacity-40'>Prev</button>}
-                {pageNum < totalPages ? <button onClick={(e) => { handleSearch(e, pageNum + 1); setPageNum(pageNum + 1) }} className='text-slate-300 bg-slate-600 p-2 rounded-sm'>Next</button>
-                    : <button className='text-slate-300 bg-slate-600 p-2 rounded-sm opacity-40'>Next</button>}
-                <div className='ml-48'>{pageNum}/{totalPages}</div>
-            </div> */}
+            <div className='flex items-center gap-2'>
+                {pageNum > 1 ? <button onClick={(e) => { handleSearch(e, pageNum - 1); setPageNum(pageNum - 1) }} className='text-slate-50 bg-neutral-800 py-2 px-4 rounded-sm'>Prev</button> : <button className='text-slate-50 bg-neutral-800 py-2 px-4 rounded-sm opacity-40'>Prev</button>}
+                {pageNum < totalPages ? <button onClick={(e) => { handleSearch(e, pageNum + 1); setPageNum(pageNum + 1) }} className='text-slate-50 bg-neutral-800 py-2 px-4 rounded-sm'>Next</button>
+                    : <button className='text-slate-50 bg-neutral-800 py-2 px-4 rounded-sm opacity-40'>Next</button>}
+                <div className='ml-4'>{pageNum}/{totalPages}</div>
+            </div>
         </div>
 
 

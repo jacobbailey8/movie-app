@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useRef, use } from 'react'; // React Library
 import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
 import WatchlistSelectModal from './WatchlistSelectModal'; // Watchlist Select Modal Component
+import ColumnSelector from './ColumnSelector'; // Column Selector Component
 // import '/Users/jacobbailey/Desktop/movie-app/frontend/app/movies/tableComponents/styles/ag-grid-theme-builder.css';
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -82,7 +83,9 @@ export default function Table({ movies, setMovies, colDefs, setColDefs, setModal
     };
 
     return (
+
         <div className='w-full'>
+            <ColumnSelector colDefs={colDefs} setColDefs={setColDefs} />
             {/* // wrapping container with theme & size */}
             <div
                 className={

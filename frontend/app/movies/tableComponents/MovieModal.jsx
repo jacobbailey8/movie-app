@@ -70,7 +70,6 @@ export default function Modal({ movie, closeModal }) {
                     else {
                         setSentimentColor('bg-yellow-200');
                     }
-                    console.log(data2.sentiment);
 
 
                 } catch (error) {

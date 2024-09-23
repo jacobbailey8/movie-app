@@ -21,7 +21,6 @@ function Watchlist({ watchlist, setWatchlists, setRecommendations, setRecommenda
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(data);
                 setRecommendations(data.top_5);
                 setRecommendationListTitle(watchlist.name);
             }
